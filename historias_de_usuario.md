@@ -64,3 +64,41 @@ para saber a quiÃ©n se le prestÃ³ histÃ³ricamente y quiÃ©nes son los deudores ac
 **Criterios de AceptaciÃ³n:**
 - Debe existir una vista con la lista de prÃ©stamos activos e inactivos.
 - Se debe indicar claramente quÃ© prÃ©stamos aÃºn no han sido devueltos.
+
+## Épica 3: Funcionalidades Adicionales y Mejoras
+**HU 3.1: Panel de Control (Dashboard)**
+Como administrador,
+quiero ver un resumen en la pantalla principal (cantidad de libros, préstamos activos),
+para tener una vista rápida del estado de la biblioteca.
+**Criterios de Aceptación:**
+- La pantalla principal debe mostrar tarjetas con métricas básicas.
+
+**HU 3.2: Búsqueda y filtrado de libros**
+Como usuario/administrador,
+quiero buscar libros por título o autor,
+para encontrar un ejemplar rápidamente en un catálogo grande.
+**Criterios de Aceptación:**
+- Debe existir una barra de búsqueda en la vista del catálogo.
+- Los resultados deben actualizarse al buscar.
+
+**HU 3.3: Gestión de Socios (Lectores)**
+Como administrador,
+quiero mantener un registro de las personas que piden libros (nombre, teléfono, email),
+para no tener que tipear sus datos cada vez que les presto un ejemplar.
+**Criterios de Aceptación:**
+- CRUD básico de socios/lectores.
+- Al registrar un préstamo, se debe poder seleccionar al socio de una lista desplegable.
+
+**HU 3.4: Alertas de Préstamos Vencidos**
+Como administrador,
+quiero ver qué préstamos tienen más de 15 días sin ser devueltos,
+para contactar a los lectores y reclamar los libros.
+**Criterios de Aceptación:**
+- En el historial de préstamos, resaltar en rojo aquellos que excedan los 15 días de antigüedad.
+
+**HU 3.5: Historial de movimientos de un libro**
+Como administrador,
+quiero seleccionar un libro específico y ver todas las veces que fue prestado y devuelto,
+para entender la popularidad y el desgaste del ejemplar.
+**Criterios de Aceptación:**
+- La vista de detalle de un libro debe mostrar una tabla con el registro histórico de sus préstamos específicos.
