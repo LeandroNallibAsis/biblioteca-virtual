@@ -5,15 +5,34 @@
 ## TABLA DE CONTENIDOS
 1. [Introducción](#1-introducción)
 2. [Descripción General](#2-descripción-general)
+   - 2.1. [Necesidades de Negocio del Cliente](#21-necesidades-de-negocio-del-cliente)
+   - 2.2. [Entorno](#22-entorno)
+   - 2.3. [Descripción de Producto o Servicio](#23-descripción-de-producto-o-servicio)
+   - 2.4. [Objetivos de Proyecto](#24-objetivos-de-proyecto)
+   - 2.5. [Entregables de Proyecto](#25-entregables-de-proyecto)
+   - 2.6. [Suposiciones](#26-suposiciones)
+   - 2.7. [Restricciones](#27-restricciones)
+   - 2.8. [Involucrados en el Proyecto](#28-involucrados-en-el-proyecto)
+   - 2.9. [Requerimientos Detallados Técnicos y de Gestión](#29-requerimientos-detallados-técnicos-y-de-gestión)
 3. [Equipo de Proyecto](#3-equipo-de-proyecto)
+   - 3.1. [Organigrama de Proyecto (OBS)](#31-organigrama-de-proyecto-obs)
+   - 3.2. [Proveedores y Subcontratistas](#32-proveedores-y-subcontratistas)
+   - 3.3. [Matriz de Asignación de Responsabilidades](#33-matriz-de-asignación-de-responsabilidades)
 4. [Cronograma de Proyecto](#4-cronograma-de-proyecto)
+   - 4.1. [Gráfico Gantt](#41-gráfico-gantt)
+   - 4.2. [Hitos](#42-hitos)
 5. [Presupuesto del Proyecto](#5-presupuesto-del-proyecto)
+   - 5.1. [Línea de Base](#51-línea-de-base)
 6. [Registro de Riesgos](#6-registro-de-riesgos)
 7. [Control de Cambios](#7-control-de-cambios)
+   - 7.1. [Comité de Control de Cambios](#71-comité-de-control-de-cambios)
+   - 7.2. [Procedimiento de Control de Cambios](#72-procedimiento-de-control-de-cambios)
 8. [Comunicaciones Interpersonales en el Proyecto](#8-comunicaciones-interpersonales-en-el-proyecto)
 9. [Plan de Pruebas y Aceptación](#9-plan-de-pruebas-y-aceptación)
 10. [Gestión de Subcontratistas](#10-gestión-de-subcontratistas)
 11. [Logística](#11-logística)
+   - 11.1. [Lugares Físicos de Trabajo](#111-lugares-físicos-de-trabajo)
+   - 11.2. [Viajes y traslados](#112-viajes-y-traslados)
 12. [Anexo I - Contratos](#12-anexo-i---contratos)
 13. [Anexo II – Minutas de reunión](#13-anexo-ii--minutas-de-reunión)
 14. [Anexo III – Documentos de Control de Cambios](#14-anexo-iii--documentos-de-control-de-cambios)
@@ -141,5 +160,5 @@ Proyecto de índole académica (costo $0, salvo recursos propios computacionales
 *(Aquí se registrarán los cambios solicitados por el docente)*
 
 ## 15. Anexo IV – Otros Documentos
-- Enlace al repositorio de GitHub: `[Pendiente]`
+- Enlace al repositorio de GitHub: https://github.com/LeandroNallibAsis/biblioteca-virtual.git
 - Historias de Usuario: `historias_de_usuario.md`
