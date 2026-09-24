@@ -44,18 +44,46 @@ app.post('/api/libros', (req, res) => {
 // Editar un libro
 app.put('/api/libros/:id', (req, res) => {
     const { id } = req.params;
-    const { titulo, autor, genero, isbn } = req.body;
-    db.run(
-        `UPDATE libros SET titulo = ?, autor = ?, genero = ?, isbn = ? WHERE id = ?`,
-        [titulo, autor, genero, isbn, id],
-        function (err) {
-            if (err) {
-                res.status(400).json({ error: err.message });
-                return;
-            }
-            res.json({ mensaje: 'Libro actualizado con éxito' });
+    const { titulo, autor, genero, isbn, stock_total } = req.body;
+    
+    // Primero, obtener el stock actual para calcular la diferencia
+    db.get("SELECT stock_total, stock_disponible FROM libros WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
         }
-    );
+        if (!row) {
+            res.status(404).json({ error: "Libro no encontrado" });
+            return;
+        }
+        
+        let nuevoStockTotal = parseInt(stock_total);
+        if (isNaN(nuevoStockTotal) || nuevoStockTotal < 1) {
+            res.status(400).json({ error: "El stock total debe ser mayor a 0." });
+            return;
+        }
+
+        // Calculamos cuántos libros están prestados
+        let prestados = row.stock_total - row.stock_disponible;
+        let nuevoStockDisponible = nuevoStockTotal - prestados;
+
+        if (nuevoStockDisponible < 0) {
+            res.status(400).json({ error: "No puedes reducir el stock por debajo de la cantidad de libros prestados (" + prestados + ")." });
+            return;
+        }
+
+        db.run(
+            `UPDATE libros SET titulo = ?, autor = ?, genero = ?, isbn = ?, stock_total = ?, stock_disponible = ? WHERE id = ?`,
+            [titulo, autor, genero, isbn, nuevoStockTotal, nuevoStockDisponible, id],
+            function (err) {
+                if (err) {
+                    res.status(400).json({ error: err.message });
+                    return;
+                }
+                res.json({ mensaje: 'Libro y stock actualizados con éxito' });
+            }
+        );
+    });
 });
 
 // Eliminar un libro
