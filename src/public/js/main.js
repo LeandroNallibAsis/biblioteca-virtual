@@ -345,6 +345,158 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- MÓDULO PRÉSTAMOS ---
+    let prestamosActuales = [];
+
+    const cargarPrestamos = async () => {
+        appContent.innerHTML = '<h2>Cargando préstamos...</h2>';
+        try {
+            const res = await fetch('/api/prestamos');
+            prestamosActuales = await res.json();
+            renderizarTablaPrestamos();
+        } catch (error) {
+            console.error(error);
+            appContent.innerHTML = '<p>Error al cargar los préstamos.</p>';
+        }
+    };
+
+    const renderizarTablaPrestamos = () => {
+        let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Gestión de Préstamos</h2>
+            <button id="btn-nuevo-prestamo" style="padding: 10px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 5px;">+ Nuevo Préstamo</button>
+        </div>
+        
+        <table border="1" width="100%" style="margin-top: 1rem; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th style="padding: 8px;">Libro</th>
+                    <th style="padding: 8px;">Socio</th>
+                    <th style="padding: 8px;">Fecha Préstamo</th>
+                    <th style="padding: 8px;">Estado</th>
+                    <th style="padding: 8px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            
+        if (prestamosActuales.length === 0) {
+            html += `<tr><td colspan="5" style="text-align: center; padding: 10px;">No hay préstamos registrados.</td></tr>`;
+        } else {
+            prestamosActuales.forEach(p => {
+                let esActivo = p.estado === 'Activo';
+                html += `<tr style="background-color: ${esActivo ? '#fff' : '#f9f9f9'}; color: ${esActivo ? '#000' : '#7f8c8d'};">
+                    <td style="padding: 8px;">${p.libro_titulo}</td>
+                    <td style="padding: 8px;">${p.socio_nombre}</td>
+                    <td style="padding: 8px;">${p.fecha_prestamo}</td>
+                    <td style="padding: 8px; font-weight: bold; color: ${esActivo ? '#27ae60' : '#7f8c8d'};">${p.estado}</td>
+                    <td style="padding: 8px;">
+                        ${esActivo ? `<button onclick="devolverLibro(${p.id})" style="cursor: pointer; background: #3498db; color: white; border: none; border-radius: 3px; padding: 5px;">Devolver</button>` : 'Devuelto: ' + p.fecha_devolucion}
+                    </td>
+                </tr>`;
+            });
+        }
+        html += `</tbody></table>`;
+        appContent.innerHTML = html;
+
+        document.getElementById('btn-nuevo-prestamo').addEventListener('click', mostrarFormularioPrestamo);
+    };
+
+    const mostrarFormularioPrestamo = async () => {
+        appContent.innerHTML = '<h2>Cargando formulario...</h2>';
+        
+        try {
+            // Traemos libros y socios para llenar los combos
+            const resLibros = await fetch('/api/libros');
+            const libros = await resLibros.json();
+            
+            const resSocios = await fetch('/api/socios');
+            const socios = await resSocios.json();
+
+            // Filtramos solo los libros que tienen stock disponible
+            const librosDisponibles = libros.filter(l => l.stock_disponible > 0);
+
+            let html = `
+                <h2>Registrar Nuevo Préstamo</h2>
+                <form id="form-prestamo" style="display: flex; flex-direction: column; max-width: 400px; gap: 10px;">
+                    <label>Seleccionar Libro:</label>
+                    <select id="prestamo-libro" required style="padding: 5px;">
+                        <option value="">-- Elegir libro --</option>
+                        ${librosDisponibles.map(l => `<option value="${l.id}">${l.titulo} (Disp: ${l.stock_disponible})</option>`).join('')}
+                    </select>
+                    
+                    <label>Seleccionar Socio:</label>
+                    <select id="prestamo-socio" required style="padding: 5px;">
+                        <option value="">-- Elegir socio --</option>
+                        ${socios.map(s => `<option value="${s.id}">${s.nombre}</option>`).join('')}
+                    </select>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="submit" style="padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px;">Registrar Préstamo</button>
+                        <button type="button" id="btn-cancelar-prestamo" style="padding: 10px; background: #c0392b; color: white; border: none; cursor: pointer; border-radius: 5px;">Cancelar</button>
+                    </div>
+                </form>
+            `;
+
+            appContent.innerHTML = html;
+
+            if (librosDisponibles.length === 0) {
+                alert("Atención: No hay libros con stock disponible para prestar actualmente.");
+            }
+
+            document.getElementById('btn-cancelar-prestamo').addEventListener('click', cargarPrestamos);
+
+            document.getElementById('form-prestamo').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const payload = {
+                    libro_id: document.getElementById('prestamo-libro').value,
+                    socio_id: document.getElementById('prestamo-socio').value
+                };
+
+                try {
+                    const res = await fetch('/api/prestamos', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (res.ok) {
+                        alert('Préstamo registrado con éxito. Se descontó 1 unidad del stock.');
+                        cargarPrestamos();
+                    } else {
+                        const data = await res.json();
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) {
+                    console.error('Error al guardar', error);
+                    alert('Ocurrió un error de red');
+                }
+            });
+
+        } catch (error) {
+            console.error(error);
+            appContent.innerHTML = '<p>Error al cargar los datos para el formulario.</p>';
+        }
+    };
+
+    window.devolverLibro = async (id) => {
+        if (!confirm('¿Confirmas que el socio devolvió este libro en buen estado?')) return;
+        
+        try {
+            const res = await fetch('/api/prestamos/' + id + '/devolucion', { method: 'PUT' });
+            if (res.ok) {
+                alert('Libro devuelto con éxito. El stock volvió a la biblioteca.');
+                cargarPrestamos();
+            } else {
+                const data = await res.json();
+                alert('Error al devolver: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error al devolver', error);
+            alert('Ocurrió un error de red');
+        }
+    };
+
     // Navegación principal
     linkCatalogo.addEventListener('click', (e) => {
         e.preventDefault();
@@ -353,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkPrestamos.addEventListener('click', (e) => {
         e.preventDefault();
-        appContent.innerHTML = '<h2>Gestión de Préstamos</h2><p>Módulo en desarrollo (Paso B del Sprint 4)...</p>';
+        cargarPrestamos();
     });
 
     linkSocios.addEventListener('click', (e) => {

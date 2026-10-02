@@ -187,6 +187,110 @@ app.delete('/api/socios/:id', (req, res) => {
     });
 });
 
+// --- API Endpoints Préstamos ---
+
+// Obtener todos los préstamos (con datos de libro y socio)
+app.get('/api/prestamos', (req, res) => {
+    const query = `
+        SELECT p.id, p.fecha_prestamo, p.fecha_devolucion, p.estado,
+               l.titulo as libro_titulo, s.nombre as socio_nombre
+        FROM prestamos p
+        JOIN libros l ON p.libro_id = l.id
+        JOIN socios s ON p.socio_id = s.id
+        ORDER BY p.id DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
+// Registrar un préstamo
+app.post('/api/prestamos', (req, res) => {
+    const { libro_id, socio_id } = req.body;
+    
+    // Verificar que el libro tenga stock disponible
+    db.get("SELECT stock_disponible FROM libros WHERE id = ?", [libro_id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ error: "Libro no encontrado" });
+            return;
+        }
+        if (row.stock_disponible < 1) {
+            res.status(400).json({ error: "No hay stock disponible para prestar este libro." });
+            return;
+        }
+
+        // Restar 1 al stock y crear el préstamo
+        db.serialize(() => {
+            db.run("BEGIN TRANSACTION");
+            
+            db.run("UPDATE libros SET stock_disponible = stock_disponible - 1 WHERE id = ?", [libro_id]);
+            
+            db.run(
+                "INSERT INTO prestamos (libro_id, socio_id) VALUES (?, ?)", 
+                [libro_id, socio_id],
+                function(err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        res.status(500).json({ error: err.message });
+                        return;
+                    }
+                    db.run("COMMIT");
+                    res.json({ id: this.lastID, mensaje: "Préstamo registrado exitosamente" });
+                }
+            );
+        });
+    });
+});
+
+// Registrar devolución
+app.put('/api/prestamos/:id/devolucion', (req, res) => {
+    const { id } = req.params;
+
+    db.get("SELECT libro_id, estado FROM prestamos WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (!row) {
+            res.status(404).json({ error: "Préstamo no encontrado" });
+            return;
+        }
+        if (row.estado !== 'Activo') {
+            res.status(400).json({ error: "Este préstamo ya fue devuelto." });
+            return;
+        }
+
+        // Marcar como devuelto y sumar 1 al stock
+        db.serialize(() => {
+            db.run("BEGIN TRANSACTION");
+            
+            db.run("UPDATE libros SET stock_disponible = stock_disponible + 1 WHERE id = ?", [row.libro_id]);
+            
+            db.run(
+                "UPDATE prestamos SET estado = 'Devuelto', fecha_devolucion = CURRENT_DATE WHERE id = ?", 
+                [id],
+                function(err) {
+                    if (err) {
+                        db.run("ROLLBACK");
+                        res.status(500).json({ error: err.message });
+                        return;
+                    }
+                    db.run("COMMIT");
+                    res.json({ mensaje: "Devolución registrada exitosamente" });
+                }
+            );
+        });
+    });
+});
+
 // Levantar el servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
