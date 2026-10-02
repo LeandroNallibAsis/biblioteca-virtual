@@ -17,3 +17,4 @@ El período de desarrollo es de 6 semanas, con encuentros de seguimiento los dí
 
 ## Tecnologías Utilizadas
 *(A definir)*
+.
