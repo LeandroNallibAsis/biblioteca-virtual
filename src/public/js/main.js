@@ -199,6 +199,153 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    let sociosActuales = [];
+
+    // --- MÓDULO SOCIOS ---
+    const cargarSocios = async () => {
+        appContent.innerHTML = '<h2>Cargando socios...</h2>';
+        try {
+            const res = await fetch('/api/socios');
+            sociosActuales = await res.json();
+            renderizarTablaSocios();
+        } catch (error) {
+            console.error(error);
+            appContent.innerHTML = '<p>Error al cargar los socios.</p>';
+        }
+    };
+
+    const renderizarTablaSocios = () => {
+        let html = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Gestión de Socios</h2>
+            <button id="btn-nuevo-socio" style="padding: 10px; cursor: pointer; background: #2c3e50; color: white; border: none; border-radius: 5px;">+ Nuevo Socio</button>
+        </div>
+        
+        <table border="1" width="100%" style="margin-top: 1rem; border-collapse: collapse; text-align: left;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th style="padding: 8px;">Nombre Completo</th>
+                    <th style="padding: 8px;">Teléfono</th>
+                    <th style="padding: 8px;">Email</th>
+                    <th style="padding: 8px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            
+        if (sociosActuales.length === 0) {
+            html += `<tr><td colspan="4" style="text-align: center; padding: 10px;">No hay socios registrados.</td></tr>`;
+        } else {
+            sociosActuales.forEach(s => {
+                html += `<tr>
+                    <td style="padding: 8px;">${s.nombre}</td>
+                    <td style="padding: 8px;">${s.telefono || '-'}</td>
+                    <td style="padding: 8px;">${s.email || '-'}</td>
+                    <td style="padding: 8px;">
+                        <button onclick="editarSocio(${s.id})" style="cursor: pointer; background: #f39c12; color: white; border: none; border-radius: 3px; padding: 5px;">Editar</button>
+                        <button onclick="eliminarSocio(${s.id})" style="cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 5px;">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+        }
+        html += `</tbody></table>`;
+        appContent.innerHTML = html;
+
+        document.getElementById('btn-nuevo-socio').addEventListener('click', () => mostrarFormularioSocio());
+    };
+
+    window.mostrarFormularioSocio = (socioId = null) => {
+        let socio = { nombre: '', telefono: '', email: '' };
+        let esEdicion = false;
+
+        if (socioId) {
+            esEdicion = true;
+            socio = sociosActuales.find(s => s.id === socioId);
+        }
+
+        appContent.innerHTML = `
+            <h2>${esEdicion ? 'Editar Socio' : 'Registrar Nuevo Socio'}</h2>
+            <form id="form-socio" style="display: flex; flex-direction: column; max-width: 400px; gap: 10px;">
+                <label>Nombre Completo:</label>
+                <input type="text" id="socio-nombre" value="${socio.nombre}" required>
+                
+                <label>Teléfono:</label>
+                <input type="text" id="socio-telefono" value="${socio.telefono || ''}">
+                
+                <label>Email:</label>
+                <input type="email" id="socio-email" value="${socio.email || ''}">
+                
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <button type="submit" style="padding: 10px; background: #27ae60; color: white; border: none; cursor: pointer; border-radius: 5px;">
+                        ${esEdicion ? 'Guardar Cambios' : 'Registrar Socio'}
+                    </button>
+                    <button type="button" id="btn-cancelar-socio" style="padding: 10px; background: #c0392b; color: white; border: none; cursor: pointer; border-radius: 5px;">Cancelar</button>
+                </div>
+            </form>
+        `;
+
+        document.getElementById('btn-cancelar-socio').addEventListener('click', cargarSocios);
+
+        document.getElementById('form-socio').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const payload = {
+                nombre: document.getElementById('socio-nombre').value,
+                telefono: document.getElementById('socio-telefono').value,
+                email: document.getElementById('socio-email').value
+            };
+
+            let url = '/api/socios';
+            let method = 'POST';
+
+            if (esEdicion) {
+                url = '/api/socios/' + socioId;
+                method = 'PUT';
+            }
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    alert(esEdicion ? 'Socio actualizado con éxito' : 'Socio registrado con éxito');
+                    cargarSocios();
+                } else {
+                    const data = await res.json();
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error al guardar', error);
+                alert('Ocurrió un error de red');
+            }
+        });
+    };
+
+    window.editarSocio = (id) => {
+        mostrarFormularioSocio(id);
+    };
+
+    window.eliminarSocio = async (id) => {
+        if (!confirm('¿Estás seguro de que deseas eliminar este socio?')) return;
+        
+        try {
+            const res = await fetch('/api/socios/' + id, { method: 'DELETE' });
+            if (res.ok) {
+                alert('Socio eliminado');
+                cargarSocios();
+            } else {
+                const data = await res.json();
+                alert('Error al eliminar: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error al eliminar', error);
+            alert('Ocurrió un error de red');
+        }
+    };
+
+    // Navegación principal
     linkCatalogo.addEventListener('click', (e) => {
         e.preventDefault();
         cargarCatalogo();
@@ -206,11 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     linkPrestamos.addEventListener('click', (e) => {
         e.preventDefault();
-        appContent.innerHTML = '<h2>Gestión de Préstamos</h2><p>Módulo en desarrollo (Sprint 4)...</p>';
+        appContent.innerHTML = '<h2>Gestión de Préstamos</h2><p>Módulo en desarrollo (Paso B del Sprint 4)...</p>';
     });
 
     linkSocios.addEventListener('click', (e) => {
         e.preventDefault();
-        appContent.innerHTML = '<h2>Gestión de Socios</h2><p>Módulo en desarrollo (Sprint 4)...</p>';
+        cargarSocios();
     });
 });

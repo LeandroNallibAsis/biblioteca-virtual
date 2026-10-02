@@ -116,6 +116,77 @@ app.delete('/api/libros/:id', (req, res) => {
     });
 });
 
+// --- API Endpoints Socios ---
+
+// Obtener todos los socios
+app.get('/api/socios', (req, res) => {
+    db.all("SELECT * FROM socios", [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(rows);
+    });
+});
+
+// Agregar un socio
+app.post('/api/socios', (req, res) => {
+    const { nombre, telefono, email } = req.body;
+    db.run(
+        `INSERT INTO socios (nombre, telefono, email) VALUES (?, ?, ?)`,
+        [nombre, telefono, email],
+        function (err) {
+            if (err) {
+                res.status(400).json({ error: err.message });
+                return;
+            }
+            res.json({ id: this.lastID, mensaje: 'Socio registrado con éxito' });
+        }
+    );
+});
+
+// Editar un socio
+app.put('/api/socios/:id', (req, res) => {
+    const { id } = req.params;
+    const { nombre, telefono, email } = req.body;
+    db.run(
+        `UPDATE socios SET nombre = ?, telefono = ?, email = ? WHERE id = ?`,
+        [nombre, telefono, email, id],
+        function (err) {
+            if (err) {
+                res.status(400).json({ error: err.message });
+                return;
+            }
+            res.json({ mensaje: 'Socio actualizado con éxito' });
+        }
+    );
+});
+
+// Eliminar un socio
+app.delete('/api/socios/:id', (req, res) => {
+    const { id } = req.params;
+    
+    // Validar si tiene préstamos activos antes de eliminar
+    db.get("SELECT COUNT(*) as count FROM prestamos WHERE socio_id = ? AND estado = 'Activo'", [id], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        if (row.count > 0) {
+            res.status(400).json({ error: "No se puede eliminar el socio porque tiene préstamos activos." });
+            return;
+        }
+        
+        db.run(`DELETE FROM socios WHERE id = ?`, [id], function (err) {
+            if (err) {
+                res.status(500).json({ error: err.message });
+                return;
+            }
+            res.json({ mensaje: 'Socio eliminado con éxito' });
+        });
+    });
+});
+
 // Levantar el servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
