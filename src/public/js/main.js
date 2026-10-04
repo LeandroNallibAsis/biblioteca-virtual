@@ -382,13 +382,33 @@ document.addEventListener('DOMContentLoaded', () => {
         if (prestamosActuales.length === 0) {
             html += `<tr><td colspan="5" style="text-align: center; padding: 10px;">No hay préstamos registrados.</td></tr>`;
         } else {
+            const hoy = new Date();
+            
             prestamosActuales.forEach(p => {
                 let esActivo = p.estado === 'Activo';
-                html += `<tr style="background-color: ${esActivo ? '#fff' : '#f9f9f9'}; color: ${esActivo ? '#000' : '#7f8c8d'};">
+                let msjEstado = p.estado;
+                let colorFondo = esActivo ? '#fff' : '#f9f9f9';
+                let colorTexto = esActivo ? '#000' : '#7f8c8d';
+                let colorEstado = esActivo ? '#27ae60' : '#7f8c8d';
+                
+                // Lógica HU 3.4: Verificar si está vencido (> 15 días)
+                if (esActivo) {
+                    const fechaPrestamo = new Date(p.fecha_prestamo);
+                    const difTiempo = Math.abs(hoy - fechaPrestamo);
+                    const difDias = Math.ceil(difTiempo / (1000 * 60 * 60 * 24)); 
+                    
+                    if (difDias > 15) {
+                        msjEstado = `⚠️ VENCIDO (Hace ${difDias - 15} días)`;
+                        colorFondo = '#ffebee'; // Fondo rojito claro
+                        colorEstado = '#c0392b'; // Texto rojo fuerte
+                    }
+                }
+
+                html += `<tr style="background-color: ${colorFondo}; color: ${colorTexto};">
                     <td style="padding: 8px;">${p.libro_titulo}</td>
                     <td style="padding: 8px;">${p.socio_nombre}</td>
                     <td style="padding: 8px;">${p.fecha_prestamo}</td>
-                    <td style="padding: 8px; font-weight: bold; color: ${esActivo ? '#27ae60' : '#7f8c8d'};">${p.estado}</td>
+                    <td style="padding: 8px; font-weight: bold; color: ${colorEstado};">${msjEstado}</td>
                     <td style="padding: 8px;">
                         ${esActivo ? `<button onclick="devolverLibro(${p.id})" style="cursor: pointer; background: #3498db; color: white; border: none; border-radius: 3px; padding: 5px;">Devolver</button>` : 'Devuelto: ' + p.fecha_devolucion}
                     </td>
