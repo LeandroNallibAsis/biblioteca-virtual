@@ -51,7 +51,8 @@ Para correr el proyecto en tu computadora, asegurate de tener [Node.js](https://
    Ingresá a `http://localhost:3000` en tu navegador web.
 
 ## 📂 Documentación y Proceso (Scrum)
-Todo el proceso metodológico que respalda la construcción de este software se encuentra documentado en los siguientes archivos de la raíz del proyecto:
+Todo el proceso metodológico que respalda la construcción de este software se encuentra documentado en los siguientes archivos de la raíz del proyecto o en el Drive del proyecto:
+*   [Google Drive](https://drive.google.com/drive/folders/1Um9Vl5dBuFflwhE02sFL_Qz-B1nTBtRn?usp=sharing):Documentacion completa en la nuve.
 *   [PMI.md](./PMI.md): Plan de Gestión del Proyecto (Riesgos, Gantt, Matriz RACI).
 
 **Autor:** Leandro Nallib Asis  
