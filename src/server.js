@@ -28,9 +28,25 @@ app.get('/api/libros', (req, res) => {
 // Agregar un libro
 app.post('/api/libros', (req, res) => {
     const { titulo, autor, genero, isbn, stock } = req.body;
+
+    if (!titulo || typeof titulo !== 'string' || !titulo.trim()) {
+        return res.status(400).json({ error: "El título del libro es obligatorio y no puede estar vacío." });
+    }
+    if (!autor || typeof autor !== 'string' || !autor.trim()) {
+        return res.status(400).json({ error: "El autor del libro es obligatorio y no puede estar vacío." });
+    }
+    if (!isbn || typeof isbn !== 'string' || !isbn.trim()) {
+        return res.status(400).json({ error: "El código ISBN es obligatorio y no puede estar vacío." });
+    }
+
+    const stockNum = parseInt(stock);
+    if (isNaN(stockNum) || stockNum < 0) {
+        return res.status(400).json({ error: "El stock debe ser un número entero mayor o igual a 0." });
+    }
+
     db.run(
         `INSERT INTO libros (titulo, autor, genero, isbn, stock_total, stock_disponible) VALUES (?, ?, ?, ?, ?, ?)`,
-        [titulo, autor, genero, isbn, stock, stock],
+        [titulo.trim(), autor.trim(), genero ? genero.trim() : '', isbn.trim(), stockNum, stockNum],
         function (err) {
             if (err) {
                 res.status(400).json({ error: err.message });
@@ -45,6 +61,16 @@ app.post('/api/libros', (req, res) => {
 app.put('/api/libros/:id', (req, res) => {
     const { id } = req.params;
     const { titulo, autor, genero, isbn, stock_total } = req.body;
+
+    if (!titulo || typeof titulo !== 'string' || !titulo.trim()) {
+        return res.status(400).json({ error: "El título del libro es obligatorio y no puede estar vacío." });
+    }
+    if (!autor || typeof autor !== 'string' || !autor.trim()) {
+        return res.status(400).json({ error: "El autor del libro es obligatorio y no puede estar vacío." });
+    }
+    if (!isbn || typeof isbn !== 'string' || !isbn.trim()) {
+        return res.status(400).json({ error: "El código ISBN es obligatorio y no puede estar vacío." });
+    }
     
     // Primero, obtener el stock actual para calcular la diferencia
     db.get("SELECT stock_total, stock_disponible FROM libros WHERE id = ?", [id], (err, row) => {
@@ -74,7 +100,7 @@ app.put('/api/libros/:id', (req, res) => {
 
         db.run(
             `UPDATE libros SET titulo = ?, autor = ?, genero = ?, isbn = ?, stock_total = ?, stock_disponible = ? WHERE id = ?`,
-            [titulo, autor, genero, isbn, nuevoStockTotal, nuevoStockDisponible, id],
+            [titulo.trim(), autor.trim(), genero ? genero.trim() : '', isbn.trim(), nuevoStockTotal, nuevoStockDisponible, id],
             function (err) {
                 if (err) {
                     res.status(400).json({ error: err.message });
@@ -132,9 +158,14 @@ app.get('/api/socios', (req, res) => {
 // Agregar un socio
 app.post('/api/socios', (req, res) => {
     const { nombre, telefono, email } = req.body;
+
+    if (!nombre || typeof nombre !== 'string' || !nombre.trim()) {
+        return res.status(400).json({ error: "El nombre del socio es obligatorio y no puede estar vacío." });
+    }
+
     db.run(
         `INSERT INTO socios (nombre, telefono, email) VALUES (?, ?, ?)`,
-        [nombre, telefono, email],
+        [nombre.trim(), telefono ? telefono.trim() : '', email ? email.trim() : null],
         function (err) {
             if (err) {
                 res.status(400).json({ error: err.message });
@@ -149,9 +180,14 @@ app.post('/api/socios', (req, res) => {
 app.put('/api/socios/:id', (req, res) => {
     const { id } = req.params;
     const { nombre, telefono, email } = req.body;
+
+    if (!nombre || typeof nombre !== 'string' || !nombre.trim()) {
+        return res.status(400).json({ error: "El nombre del socio es obligatorio y no puede estar vacío." });
+    }
+
     db.run(
         `UPDATE socios SET nombre = ?, telefono = ?, email = ? WHERE id = ?`,
-        [nombre, telefono, email, id],
+        [nombre.trim(), telefono ? telefono.trim() : '', email ? email.trim() : null, id],
         function (err) {
             if (err) {
                 res.status(400).json({ error: err.message });
@@ -211,41 +247,55 @@ app.get('/api/prestamos', (req, res) => {
 // Registrar un préstamo
 app.post('/api/prestamos', (req, res) => {
     const { libro_id, socio_id } = req.body;
-    
-    // Verificar que el libro tenga stock disponible
-    db.get("SELECT stock_disponible FROM libros WHERE id = ?", [libro_id], (err, row) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+
+    const idLibro = parseInt(libro_id);
+    const idSocio = parseInt(socio_id);
+
+    if (isNaN(idLibro) || isNaN(idSocio)) {
+        return res.status(400).json({ error: "Debe seleccionar un libro y un socio válidos." });
+    }
+
+    // 1. Verificar existencia del socio antes de operar
+    db.get("SELECT id FROM socios WHERE id = ?", [idSocio], (errSocio, socio) => {
+        if (errSocio) {
+            return res.status(500).json({ error: errSocio.message });
         }
-        if (!row) {
-            res.status(404).json({ error: "Libro no encontrado" });
-            return;
-        }
-        if (row.stock_disponible < 1) {
-            res.status(400).json({ error: "No hay stock disponible para prestar este libro." });
-            return;
+        if (!socio) {
+            return res.status(404).json({ error: "El socio seleccionado no existe en el sistema." });
         }
 
-        // Restar 1 al stock y crear el préstamo
-        db.serialize(() => {
-            db.run("BEGIN TRANSACTION");
-            
-            db.run("UPDATE libros SET stock_disponible = stock_disponible - 1 WHERE id = ?", [libro_id]);
-            
-            db.run(
-                "INSERT INTO prestamos (libro_id, socio_id) VALUES (?, ?)", 
-                [libro_id, socio_id],
-                function(err) {
-                    if (err) {
-                        db.run("ROLLBACK");
-                        res.status(500).json({ error: err.message });
-                        return;
+        // 2. Verificar que el libro tenga stock disponible
+        db.get("SELECT stock_disponible FROM libros WHERE id = ?", [idLibro], (errLibro, libro) => {
+            if (errLibro) {
+                return res.status(500).json({ error: errLibro.message });
+            }
+            if (!libro) {
+                return res.status(404).json({ error: "El libro seleccionado no existe en el sistema." });
+            }
+            if (libro.stock_disponible < 1) {
+                return res.status(400).json({ error: "No hay stock disponible para prestar este libro." });
+            }
+
+            // 3. Restar 1 al stock y crear el préstamo dentro de una transacción atómica
+            db.serialize(() => {
+                db.run("BEGIN TRANSACTION");
+                
+                db.run("UPDATE libros SET stock_disponible = stock_disponible - 1 WHERE id = ?", [idLibro]);
+                
+                db.run(
+                    "INSERT INTO prestamos (libro_id, socio_id) VALUES (?, ?)", 
+                    [idLibro, idSocio],
+                    function(err) {
+                        if (err) {
+                            db.run("ROLLBACK");
+                            res.status(500).json({ error: err.message });
+                            return;
+                        }
+                        db.run("COMMIT");
+                        res.json({ id: this.lastID, mensaje: "Préstamo registrado exitosamente" });
                     }
-                    db.run("COMMIT");
-                    res.json({ id: this.lastID, mensaje: "Préstamo registrado exitosamente" });
-                }
-            );
+                );
+            });
         });
     });
 });
