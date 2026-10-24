@@ -21,6 +21,35 @@ const socios = [
 ];
 
 db.serialize(() => {
+    // Asegurar que las tablas existan antes de insertar datos (corrige ejecuciones en repositorios recién clonados)
+    db.run(`CREATE TABLE IF NOT EXISTS libros (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        titulo TEXT NOT NULL,
+        autor TEXT NOT NULL,
+        genero TEXT,
+        isbn TEXT UNIQUE NOT NULL,
+        stock_total INTEGER DEFAULT 0,
+        stock_disponible INTEGER DEFAULT 0
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS socios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        telefono TEXT,
+        email TEXT UNIQUE
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS prestamos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        libro_id INTEGER NOT NULL,
+        socio_id INTEGER NOT NULL,
+        fecha_prestamo DATE DEFAULT CURRENT_DATE,
+        fecha_devolucion DATE,
+        estado TEXT DEFAULT 'Activo',
+        FOREIGN KEY(libro_id) REFERENCES libros(id),
+        FOREIGN KEY(socio_id) REFERENCES socios(id)
+    )`);
+
     // Insertar libros
     const stmtLibros = db.prepare("INSERT OR IGNORE INTO libros (titulo, autor, genero, isbn, stock_total, stock_disponible) VALUES (?, ?, ?, ?, ?, ?)");
     libros.forEach(l => {

@@ -6,6 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let librosActuales = [];
 
+    // Función auxiliar para generar el HTML de una fila de libro (evita código duplicado)
+    const crearFilaLibro = (l) => `
+        <tr>
+            <td style="padding: 8px;">${l.titulo}</td>
+            <td style="padding: 8px;">${l.autor}</td>
+            <td style="padding: 8px;">${l.genero || '-'}</td>
+            <td style="padding: 8px;">${l.isbn}</td>
+            <td style="padding: 8px;">${l.stock_disponible} / ${l.stock_total}</td>
+            <td style="padding: 8px;">
+                <button onclick="editarLibro(${l.id})" style="cursor: pointer; background: #f39c12; color: white; border: none; border-radius: 3px; padding: 5px;">Editar</button>
+                <button onclick="eliminarLibro(${l.id})" style="cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 5px;">Eliminar</button>
+            </td>
+        </tr>
+    `;
+
     // Función para renderizar la tabla a partir de un arreglo de libros
     const renderizarTabla = (libros) => {
         let html = `
@@ -34,26 +49,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (libros.length === 0) {
             html += `<tr><td colspan="6" style="text-align: center; padding: 10px;">No hay libros que coincidan.</td></tr>`;
         } else {
-            libros.forEach(l => {
-                html += `<tr>
-                    <td style="padding: 8px;">${l.titulo}</td>
-                    <td style="padding: 8px;">${l.autor}</td>
-                    <td style="padding: 8px;">${l.genero || '-'}</td>
-                    <td style="padding: 8px;">${l.isbn}</td>
-                    <td style="padding: 8px;">${l.stock_disponible} / ${l.stock_total}</td>
-                    <td style="padding: 8px;">
-                        <button onclick="editarLibro(${l.id})" style="cursor: pointer; background: #f39c12; color: white; border: none; border-radius: 3px; padding: 5px;">Editar</button>
-                        <button onclick="eliminarLibro(${l.id})" style="cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 5px;">Eliminar</button>
-                    </td>
-                </tr>`;
-            });
+            html += libros.map(crearFilaLibro).join('');
         }
         html += `</tbody></table>`;
         appContent.innerHTML = html;
 
         document.getElementById('btn-nuevo').addEventListener('click', () => mostrarFormularioLibro());
         
-        // Evento de búsqueda
+        // Evento de búsqueda reactiva
         const inputBusqueda = document.getElementById('input-busqueda');
         inputBusqueda.addEventListener('keyup', (e) => {
             const query = e.target.value.toLowerCase();
@@ -66,21 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (librosFiltrados.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 10px;">No hay libros que coincidan.</td></tr>`;
             } else {
-                let tbodyHtml = '';
-                librosFiltrados.forEach(l => {
-                    tbodyHtml += `<tr>
-                        <td style="padding: 8px;">${l.titulo}</td>
-                        <td style="padding: 8px;">${l.autor}</td>
-                        <td style="padding: 8px;">${l.genero || '-'}</td>
-                        <td style="padding: 8px;">${l.isbn}</td>
-                        <td style="padding: 8px;">${l.stock_disponible} / ${l.stock_total}</td>
-                        <td style="padding: 8px;">
-                            <button onclick="editarLibro(${l.id})" style="cursor: pointer; background: #f39c12; color: white; border: none; border-radius: 3px; padding: 5px;">Editar</button>
-                            <button onclick="eliminarLibro(${l.id})" style="cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 3px; padding: 5px;">Eliminar</button>
-                        </td>
-                    </tr>`;
-                });
-                tbody.innerHTML = tbodyHtml;
+                tbody.innerHTML = librosFiltrados.map(crearFilaLibro).join('');
             }
         });
     };
