@@ -41,7 +41,7 @@ main {
     padding: 2rem;
     max-width: 800px;
     margin: 0 auto;
-    background: white;
+    background: #fdfbf7; /* Blanco hueso suave */
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     min-height: 80vh;
 }
