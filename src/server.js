@@ -112,33 +112,55 @@ app.put('/api/libros/:id', (req, res) => {
     });
 });
 
-// Eliminar un libro
+// Eliminar un libro (HU 1.4)
 app.delete('/api/libros/:id', (req, res) => {
     const { id } = req.params;
     
-    // HU 1.4: Solo se puede eliminar si no tiene ejemplares prestados
-    // Comprobamos si el stock_disponible es igual al stock_total
-    db.get("SELECT stock_total, stock_disponible FROM libros WHERE id = ?", [id], (err, row) => {
+    db.get("SELECT id, titulo FROM libros WHERE id = ?", [id], (err, libro) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            return res.status(500).json({ error: err.message });
         }
-        if (!row) {
-            res.status(404).json({ error: "Libro no encontrado" });
-            return;
+        if (!libro) {
+            return res.status(404).json({ error: "Libro no encontrado." });
         }
-        if (row.stock_total !== row.stock_disponible) {
-            res.status(400).json({ error: "No se puede eliminar el libro porque hay ejemplares prestados." });
-            return;
-        }
-        
-        db.run(`DELETE FROM libros WHERE id = ?`, [id], function (err) {
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+
+        // Consultar préstamos activos e historial total para control y preservación de auditoría
+        db.get(
+            `SELECT 
+                COUNT(CASE WHEN estado = 'Activo' THEN 1 END) AS activos,
+                COUNT(*) AS total_historial
+             FROM prestamos 
+             WHERE libro_id = ?`,
+            [id],
+            (errPrestamos, conteo) => {
+                if (errPrestamos) {
+                    return res.status(500).json({ error: errPrestamos.message });
+                }
+
+                if (conteo.activos > 0) {
+                    return res.status(400).json({ 
+                        error: "No se puede eliminar el libro porque tiene ejemplares con préstamos activos en curso." 
+                    });
+                }
+
+                if (conteo.total_historial > 0) {
+                    return res.status(400).json({ 
+                        error: "No se puede eliminar el libro porque posee un historial de préstamos registrado en el sistema. El registro se conserva para fines de auditoría e integridad de datos." 
+                    });
+                }
+
+                // Si no tiene ningún historial vinculado, se procede a la eliminación física
+                db.run(`DELETE FROM libros WHERE id = ?`, [id], function (errDelete) {
+                    if (errDelete) {
+                        if (errDelete.message && errDelete.message.includes('FOREIGN KEY')) {
+                            return res.status(400).json({ error: "No se puede eliminar el libro por restricciones de integridad referencial." });
+                        }
+                        return res.status(500).json({ error: errDelete.message });
+                    }
+                    res.json({ mensaje: 'Libro eliminado con éxito' });
+                });
             }
-            res.json({ mensaje: 'Libro eliminado con éxito' });
-        });
+        );
     });
 });
 
@@ -198,28 +220,55 @@ app.put('/api/socios/:id', (req, res) => {
     );
 });
 
-// Eliminar un socio
+// Eliminar un socio (HU 3.3)
 app.delete('/api/socios/:id', (req, res) => {
     const { id } = req.params;
     
-    // Validar si tiene préstamos activos antes de eliminar
-    db.get("SELECT COUNT(*) as count FROM prestamos WHERE socio_id = ? AND estado = 'Activo'", [id], (err, row) => {
+    db.get("SELECT id, nombre FROM socios WHERE id = ?", [id], (err, socio) => {
         if (err) {
-            res.status(500).json({ error: err.message });
-            return;
+            return res.status(500).json({ error: err.message });
         }
-        if (row.count > 0) {
-            res.status(400).json({ error: "No se puede eliminar el socio porque tiene préstamos activos." });
-            return;
+        if (!socio) {
+            return res.status(404).json({ error: "Socio no encontrado." });
         }
-        
-        db.run(`DELETE FROM socios WHERE id = ?`, [id], function (err) {
-            if (err) {
-                res.status(500).json({ error: err.message });
-                return;
+
+        // Consultar préstamos activos e historial total para control y preservación de auditoría
+        db.get(
+            `SELECT 
+                COUNT(CASE WHEN estado = 'Activo' THEN 1 END) AS activos,
+                COUNT(*) AS total_historial
+             FROM prestamos 
+             WHERE socio_id = ?`,
+            [id],
+            (errPrestamos, conteo) => {
+                if (errPrestamos) {
+                    return res.status(500).json({ error: errPrestamos.message });
+                }
+
+                if (conteo.activos > 0) {
+                    return res.status(400).json({ 
+                        error: "No se puede eliminar el socio porque tiene préstamos activos en curso." 
+                    });
+                }
+
+                if (conteo.total_historial > 0) {
+                    return res.status(400).json({ 
+                        error: "No se puede eliminar el socio porque posee un historial de préstamos registrado en el sistema. El registro se conserva para fines de auditoría e integridad de datos." 
+                    });
+                }
+
+                // Si no tiene préstamos registrados, procedemos al borrado físico
+                db.run(`DELETE FROM socios WHERE id = ?`, [id], function (errDelete) {
+                    if (errDelete) {
+                        if (errDelete.message && errDelete.message.includes('FOREIGN KEY')) {
+                            return res.status(400).json({ error: "No se puede eliminar el socio por restricciones de integridad referencial." });
+                        }
+                        return res.status(500).json({ error: errDelete.message });
+                    }
+                    res.json({ mensaje: 'Socio eliminado con éxito' });
+                });
             }
-            res.json({ mensaje: 'Socio eliminado con éxito' });
-        });
+        );
     });
 });
 
