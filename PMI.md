@@ -173,7 +173,7 @@ gantt
 | **ACT-01** | **Sprint 1:** Inicio y Definición del Proyecto | 08/09/2026 | 18/09/2026 | Product Backlog inicial, alcance, repositorio GitHub creado. | - | Aprobado |
 | **ACT-02** | **Sprint 2:** Planificación e Historias de Usuario | 19/09/2026 | 02/10/2026 | Historias de usuario detalladas, criterios de aceptación, servidor base. | ACT-01 | Aprobado |
 | **ACT-03** | **Sprint 3:** Desarrollo del Primer Incremento | 03/10/2026 | 16/10/2026 | CRUD Catálogo Libros, Búsqueda, Stock inicial, commits periódicos. | ACT-02 | Revisado |
-| **ACT-04** | **Sprint 4:** Socios, Préstamos y Alertas | 17/10/2026 | 30/10/2026 | CRUD Socios, Préstamos atómicos, Alertas morosidad (HU 3.4). | ACT-03 | En Curso |
+| **ACT-04** | **Sprint 4:** Socios, Préstamos y Alertas | 17/10/2026 | 30/10/2026 | CRUD Socios, Préstamos atómicos, Alertas morosidad (HU 3.4), Evidencias. | ACT-03 | Completado y Verificado |
 | **ACT-05** | **Sprint 5:** Robustez Técnica y Retrospectiva | 31/10/2026 | 13/11/2026 | Validaciones API, `PRAGMA foreign_keys = ON`, seed corregido. | ACT-04 | Planificado |
 | **ACT-06** | **Sprint 6:** Cierre de Acompañamiento y Defensa | 14/11/2026 | 27/11/2026 | Wiki completa, merge final a `main`, preparación de presentación. | ACT-05 | Planificado |
 
@@ -183,7 +183,7 @@ gantt
 | **HIT-01** | Definición y Aprobación de Alcance | 18/09/2026 | Repositorio activo, PMI base y Product Backlog aprobados por cátedra. |
 | **HIT-02** | Planificación de Sprints y Backlog | 02/10/2026 | Historias de usuario formalizadas con criterios de aceptación en Markdown. |
 | **HIT-03** | Primer Incremento Funcional Demostrado | 16/10/2026 | Módulo de Catálogo funcional presentado en encuentro presencial. |
-| **HIT-04** | Segundo Incremento: Préstamos y Socios | 30/10/2026 | Flujo de préstamos y devoluciones validado sin inconsistencias de stock. |
+| **HIT-04** | Segundo Incremento: Préstamos y Socios | 30/10/2026 | Flujo de préstamos y devoluciones validado con control de concurrencia y sin inconsistencias. Cumplido y Aprobado. |
 | **HIT-05** | Integridad y Estabilidad de Sistema | 13/11/2026 | Validaciones de backend verificadas, tests manuales superados al 100%. |
 | **HIT-06** | Cierre de Acompañamiento y Defensa Oral | 27/11/2026 | Defensa presencial del proyecto funcional y repositorio consolidado. |
 
@@ -361,9 +361,28 @@ No aplica por tratarse de un proyecto de evaluación académica.
 
 ---
 
+
+### Minuta 4: Sprint 4 - Cierre Asincrónico y Devolución de Cátedra
+- **Fecha:** 05 de noviembre de 2026 (Comunicación oficial vía correo electrónico).
+- **Participantes:** Equipo docente evaluador de Prácticas Profesionalizantes II, Leandro Nallib Asis.
+- **Logros y avances validados por la cátedra:**
+  1. Verificación exitosa en rama `develop` de los módulos de socios, préstamos y devoluciones.
+  2. Comprobación de que la carga inicial (`npm run seed`) opera correctamente desde una base de datos nueva y limpia.
+  3. Reconocimiento de la incorporación activa de las devoluciones de la cátedra y la sólida organización del repositorio.
+  4. Cierre asincrónico del Sprint 4 formalizado sin requerir un encuentro presencial adicional de recuperación.
+- **Ajustes de cierre del Sprint 4 acordados e implementados:**
+  1. **Bajas de libros y socios con historial:** Implementación de bloqueo explícito con respuestas HTTP 400 y mensajes claros de auditoría para entidades con préstamos devueltos o activos, protegiendo la integridad referencial y eliminando errores internos 500.
+  2. **Transacciones robustas y control de concurrencia:** Afianzamiento atómico (`BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK`) en préstamos y devoluciones, garantizando que solicitudes simultáneas no produzcan stock negativo ni devoluciones duplicadas.
+  3. **Situación del Dashboard (HU 3.1):** Replanificación formal de HU 3.1 para el Sprint 5 asentada en el Backlog.
+  4. **Matriz de evidencias de prueba:** Incorporación en la documentación de la tabla con los 8 casos de prueba y sus resultados técnicos.
+
+---
+
 ## 14. Anexo III – Documentos de Control de Cambios
 - **Solicitud CC-01 (17/10/2026):** Adecuación del cronograma a Sprints oficiales, formalización de presupuesto y mitigación de riesgos presenciales. Estado: **Aprobado e Implementado**.
 - **Solicitud CC-02 (17/10/2026):** Adopción de rama `develop` y flujo GitFlow estándar con corte los domingos a las 23:59 hs. Estado: **Aprobado e Implementado**.
+- **Solicitud CC-03 (05/11/2026):** Replanificación de HU 3.1 (Dashboard) para Sprint 5, blindaje transaccional de concurrencia y bloqueo explícito con preservación de auditoría en bajas de libros y socios. Estado: **Aprobado e Implementado**.
+
 
 ---
 
