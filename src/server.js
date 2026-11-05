@@ -272,6 +272,42 @@ app.delete('/api/socios/:id', (req, res) => {
     });
 });
 
+// --- Helper de Transacciones Concurrencia y Control de Errores ---
+// Asegura que las transacciones en SQLite no se intercalen concurrentemente sobre la misma conexión
+let txQueue = Promise.resolve();
+
+function runInTransaction(callback) {
+    return new Promise((resolve, reject) => {
+        txQueue = txQueue.then(() => {
+            return new Promise((resTx, rejTx) => {
+                db.run("BEGIN IMMEDIATE", (errBegin) => {
+                    if (errBegin) {
+                        return rejTx({ status: 500, error: "Error al iniciar transacción: " + errBegin.message });
+                    }
+                    callback({
+                        commit: (result) => {
+                            db.run("COMMIT", (errCommit) => {
+                                if (errCommit) {
+                                    db.run("ROLLBACK", () => {
+                                        rejTx({ status: 500, error: "Error al confirmar transacción: " + errCommit.message });
+                                    });
+                                } else {
+                                    resTx(result);
+                                }
+                            });
+                        },
+                        rollback: (errReason) => {
+                            db.run("ROLLBACK", () => {
+                                rejTx(errReason);
+                            });
+                        }
+                    });
+                });
+            });
+        }).then(resolve).catch(reject);
+    });
+}
+
 // --- API Endpoints Préstamos ---
 
 // Obtener todos los préstamos (con datos de libro y socio)
@@ -293,19 +329,19 @@ app.get('/api/prestamos', (req, res) => {
     });
 });
 
-// Registrar un préstamo
+// Registrar un préstamo (HU 2.2) - Transacción robusta con control de concurrencia
 app.post('/api/prestamos', (req, res) => {
     const { libro_id, socio_id } = req.body;
 
     const idLibro = parseInt(libro_id);
     const idSocio = parseInt(socio_id);
 
-    if (isNaN(idLibro) || isNaN(idSocio)) {
+    if (isNaN(idLibro) || isNaN(idSocio) || idLibro <= 0 || idSocio <= 0) {
         return res.status(400).json({ error: "Debe seleccionar un libro y un socio válidos." });
     }
 
     // 1. Verificar existencia del socio antes de operar
-    db.get("SELECT id FROM socios WHERE id = ?", [idSocio], (errSocio, socio) => {
+    db.get("SELECT id, nombre FROM socios WHERE id = ?", [idSocio], (errSocio, socio) => {
         if (errSocio) {
             return res.status(500).json({ error: errSocio.message });
         }
@@ -313,81 +349,93 @@ app.post('/api/prestamos', (req, res) => {
             return res.status(404).json({ error: "El socio seleccionado no existe en el sistema." });
         }
 
-        // 2. Verificar que el libro tenga stock disponible
-        db.get("SELECT stock_disponible FROM libros WHERE id = ?", [idLibro], (errLibro, libro) => {
-            if (errLibro) {
-                return res.status(500).json({ error: errLibro.message });
-            }
-            if (!libro) {
-                return res.status(404).json({ error: "El libro seleccionado no existe en el sistema." });
-            }
-            if (libro.stock_disponible < 1) {
-                return res.status(400).json({ error: "No hay stock disponible para prestar este libro." });
-            }
-
-            // 3. Restar 1 al stock y crear el préstamo dentro de una transacción atómica
-            db.serialize(() => {
-                db.run("BEGIN TRANSACTION");
-                
-                db.run("UPDATE libros SET stock_disponible = stock_disponible - 1 WHERE id = ?", [idLibro]);
-                
-                db.run(
-                    "INSERT INTO prestamos (libro_id, socio_id) VALUES (?, ?)", 
-                    [idLibro, idSocio],
-                    function(err) {
-                        if (err) {
-                            db.run("ROLLBACK");
-                            res.status(500).json({ error: err.message });
-                            return;
-                        }
-                        db.run("COMMIT");
-                        res.json({ id: this.lastID, mensaje: "Préstamo registrado exitosamente" });
+        // 2. Ejecutar transacción protegida contra carreras y stock negativo
+        runInTransaction((tx) => {
+            // Descontar stock únicamente si stock_disponible > 0 (atómico)
+            db.run(
+                "UPDATE libros SET stock_disponible = stock_disponible - 1 WHERE id = ? AND stock_disponible > 0",
+                [idLibro],
+                function (errUpdate) {
+                    if (errUpdate) {
+                        return tx.rollback({ status: 500, error: errUpdate.message });
                     }
-                );
-            });
-        });
+
+                    // Si no hubo cambios, no había stock disponible o el libro no existe
+                    if (this.changes === 0) {
+                        return tx.rollback({ status: 400, error: "No hay stock disponible para prestar este libro." });
+                    }
+
+                    // Insertar registro del préstamo
+                    db.run(
+                        "INSERT INTO prestamos (libro_id, socio_id, fecha_prestamo, estado) VALUES (?, ?, CURRENT_DATE, 'Activo')",
+                        [idLibro, idSocio],
+                        function (errInsert) {
+                            if (errInsert) {
+                                return tx.rollback({ status: 500, error: errInsert.message });
+                            }
+                            tx.commit({ id: this.lastID, mensaje: "Préstamo registrado exitosamente" });
+                        }
+                    );
+                }
+            );
+        })
+        .then((data) => res.json(data))
+        .catch((err) => res.status(err.status || 500).json({ error: err.error || "Error al procesar el préstamo" }));
     });
 });
 
-// Registrar devolución
+// Registrar devolución (HU 2.3) - Transacción robusta con prevención de devoluciones duplicadas
 app.put('/api/prestamos/:id/devolucion', (req, res) => {
-    const { id } = req.params;
+    const idPrestamo = parseInt(req.params.id);
 
-    db.get("SELECT libro_id, estado FROM prestamos WHERE id = ?", [id], (err, row) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        if (!row) {
-            res.status(404).json({ error: "Préstamo no encontrado" });
-            return;
-        }
-        if (row.estado !== 'Activo') {
-            res.status(400).json({ error: "Este préstamo ya fue devuelto." });
-            return;
-        }
+    if (isNaN(idPrestamo) || idPrestamo <= 0) {
+        return res.status(400).json({ error: "ID de préstamo inválido." });
+    }
 
-        // Marcar como devuelto y sumar 1 al stock
-        db.serialize(() => {
-            db.run("BEGIN TRANSACTION");
-            
-            db.run("UPDATE libros SET stock_disponible = stock_disponible + 1 WHERE id = ?", [row.libro_id]);
-            
+    runInTransaction((tx) => {
+        // 1. Obtener datos del préstamo para conocer el libro asociado
+        db.get("SELECT id, libro_id, estado FROM prestamos WHERE id = ?", [idPrestamo], (errGet, prestamo) => {
+            if (errGet) {
+                return tx.rollback({ status: 500, error: errGet.message });
+            }
+            if (!prestamo) {
+                return tx.rollback({ status: 404, error: "Préstamo no encontrado." });
+            }
+            if (prestamo.estado !== 'Activo') {
+                return tx.rollback({ status: 400, error: "Este préstamo ya fue devuelto." });
+            }
+
+            // 2. Actualizar estado del préstamo de forma atómica condicionada (evita dobles devoluciones simultáneas)
             db.run(
-                "UPDATE prestamos SET estado = 'Devuelto', fecha_devolucion = CURRENT_DATE WHERE id = ?", 
-                [id],
-                function(err) {
-                    if (err) {
-                        db.run("ROLLBACK");
-                        res.status(500).json({ error: err.message });
-                        return;
+                "UPDATE prestamos SET estado = 'Devuelto', fecha_devolucion = CURRENT_DATE WHERE id = ? AND estado = 'Activo'",
+                [idPrestamo],
+                function (errUpdatePrestamo) {
+                    if (errUpdatePrestamo) {
+                        return tx.rollback({ status: 500, error: errUpdatePrestamo.message });
                     }
-                    db.run("COMMIT");
-                    res.json({ mensaje: "Devolución registrada exitosamente" });
+
+                    // Si no afectó filas, otra petición concurrente ya lo devolvió
+                    if (this.changes === 0) {
+                        return tx.rollback({ status: 400, error: "Este préstamo ya fue devuelto por otra operación concurrente." });
+                    }
+
+                    // 3. Incrementar el stock disponible del libro correspondiente
+                    db.run(
+                        "UPDATE libros SET stock_disponible = stock_disponible + 1 WHERE id = ?",
+                        [prestamo.libro_id],
+                        function (errUpdateLibro) {
+                            if (errUpdateLibro) {
+                                return tx.rollback({ status: 500, error: errUpdateLibro.message });
+                            }
+                            tx.commit({ mensaje: "Devolución registrada exitosamente" });
+                        }
+                    );
                 }
             );
         });
-    });
+    })
+    .then((data) => res.json(data))
+    .catch((err) => res.status(err.status || 500).json({ error: err.error || "Error al procesar la devolución" }));
 });
 
 // Levantar el servidor
