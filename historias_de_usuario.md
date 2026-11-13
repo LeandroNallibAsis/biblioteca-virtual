@@ -18,7 +18,7 @@ La siguiente tabla refleja la evolución progresiva del desarrollo y la trazabil
 | **HU 2.2** | Épica 2 | Registrar préstamo | Sprint 4 | `feature/afianzar-transacciones-concurrencia` | ✅ Completada | Transacción atómica (`BEGIN IMMEDIATE`/`COMMIT`) que evita stock negativo. |
 | **HU 2.3** | Épica 2 | Registrar devolución | Sprint 4 | `feature/afianzar-transacciones-concurrencia` | ✅ Completada | Transacción atómica que previene devoluciones duplicadas concurrentes. |
 | **HU 2.4** | Épica 2 | Ver historial de préstamos | Sprint 4 | `feature/prestamos` | ✅ Completada | Listado de préstamos activos e históricos con estado. |
-| **HU 3.1** | Épica 3 | Panel de Control (Dashboard) | Sprint 5 (Replanificada) | `feature/dashboard` | 🔄 Replanificada | Métricas clave. Replanificada formalmente a Sprint 5 para priorizar transacciones. |
+| **HU 3.1** | Épica 3 | Panel de Control (Dashboard) | Sprint 5 | `feature/dashboard` | ✅ Completada | Métricas en tiempo real (libros, socios, préstamos activos/vencidos y stock). |
 | **HU 3.2** | Épica 3 | Búsqueda y filtrado de libros | Sprint 3 | `feature/stock-busqueda` | ✅ Completada | Filtrado reactivo en tiempo real por título o autor. |
 | **HU 3.3** | Épica 3 | Gestión de Socios (CRUD) | Sprint 4 (Refinada) | `feature/bloqueo-bajas-historial` | ✅ Completada | ABM de socios; bloqueo explícito de baja ante préstamos activos o historial. |
 | **HU 3.4** | Épica 3 | Alertas de préstamos vencidos | Sprint 4 | `feature/hu3.4-alertas-vencidos` | ✅ Completada | Resaltado visual en rojo para préstamos con más de 15 días (> 15 días). |
