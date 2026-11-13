@@ -1,7 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const linkDashboard = document.getElementById('link-dashboard');
     const linkCatalogo = document.getElementById('link-catalogo');
     const linkPrestamos = document.getElementById('link-prestamos');
     const linkSocios = document.getElementById('link-socios');
+    const headerTitle = document.getElementById('header-title');
+
+    function setActiveNav(activeId) {
+        ['link-dashboard', 'link-catalogo', 'link-prestamos', 'link-socios'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === activeId) el.classList.add('active');
+                else el.classList.remove('active');
+            }
+        });
+    }
     const appContent = document.getElementById('app-content');
 
     let librosActuales = [];
@@ -75,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const cargarCatalogo = async () => {
+        setActiveNav('link-catalogo');
         appContent.innerHTML = '<h2>Cargando catálogo...</h2>';
         try {
             const res = await fetch('/api/libros');
@@ -192,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MÓDULO SOCIOS ---
     const cargarSocios = async () => {
+        setActiveNav('link-socios');
         appContent.innerHTML = '<h2>Cargando socios...</h2>';
         try {
             const res = await fetch('/api/socios');
@@ -338,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let prestamosActuales = [];
 
     const cargarPrestamos = async () => {
+        setActiveNav('link-prestamos');
         appContent.innerHTML = '<h2>Cargando préstamos...</h2>';
         try {
             const res = await fetch('/api/prestamos');

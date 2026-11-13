@@ -14,6 +14,25 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // --- API Endpoints ---
 
+// Obtener métricas para el Panel de Control / Dashboard (HU 3.1)
+app.get('/api/dashboard', (req, res) => {
+    const query = `
+        SELECT 
+            (SELECT COUNT(*) FROM libros) AS total_libros,
+            (SELECT COUNT(*) FROM socios) AS total_socios,
+            (SELECT COUNT(*) FROM prestamos WHERE estado = 'Activo') AS prestamos_activos,
+            (SELECT COUNT(*) FROM prestamos WHERE estado = 'Activo' AND (julianday('now') - julianday(fecha_prestamo)) > 15) AS prestamos_vencidos,
+            (SELECT IFNULL(SUM(stock_total), 0) FROM libros) AS stock_total,
+            (SELECT IFNULL(SUM(stock_disponible), 0) FROM libros) AS stock_disponible
+    `;
+    db.get(query, [], (err, stats) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json(stats);
+    });
+});
+
 // Obtener todos los libros
 app.get('/api/libros', (req, res) => {
     db.all("SELECT * FROM libros", [], (err, rows) => {
