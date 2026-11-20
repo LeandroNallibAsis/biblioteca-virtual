@@ -1,6 +1,6 @@
 # Historias de Usuario - Biblioteca Virtual
 
-Este documento contiene el Product Backlog del proyecto **Biblioteca Virtual**, estructurado bajo el marco de trabajo **Scrum**, con sus respectivas épicas, historias de usuario (HU), criterios de aceptación, la **matriz de trazabilidad integral** y la **matriz de evidencias de pruebas** requerida por la cátedra para el cierre del Sprint 4.
+Este documento contiene el Product Backlog del proyecto **Biblioteca Virtual**, estructurado bajo el marco de trabajo **Scrum**, con sus respectivas épicas, historias de usuario (HU), criterios de aceptación, la **matriz de trazabilidad integral** y las **matrices de evidencias de pruebas** requeridas por la cátedra para el cierre de los Sprints 4, 5 y 6.
 
 ---
 
@@ -22,11 +22,11 @@ La siguiente tabla refleja la evolución progresiva del desarrollo y la trazabil
 | **HU 3.2** | Épica 3 | Búsqueda y filtrado de libros | Sprint 3 | `feature/stock-busqueda` | ✅ Completada | Filtrado reactivo en tiempo real por título o autor. |
 | **HU 3.3** | Épica 3 | Gestión de Socios (CRUD) | Sprint 4 (Refinada) | `feature/bloqueo-bajas-historial` | ✅ Completada | ABM de socios; bloqueo explícito de baja ante préstamos activos o historial. |
 | **HU 3.4** | Épica 3 | Alertas de préstamos vencidos | Sprint 4 | `feature/hu3.4-alertas-vencidos` | ✅ Completada | Resaltado visual en rojo para préstamos con más de 15 días (> 15 días). |
-| **HU 3.5** | Épica 3 | Historial de movimientos por libro | Sprint 5 | `feature/hu3.5-historial-libro` | 🔮 Futura (Sprint 5) | Vista modal con el historial completo de préstamos de un libro. |
-| **HU 4.1** | Épica 4 | Validaciones estrictas en Backend | Sprint 5 | `feature/hu4.1-validaciones-api` | 🔮 Futura (Sprint 5) | Validación estricta de tipos numéricos (no "2abc") y formatos unificados. |
-| **HU 4.2** | Épica 4 | Integridad referencial en SQLite | Sprint 5 | `feature/hu4.2-foreign-keys` | 🔮 Futura (Sprint 5) | Manejo exhaustivo de operaciones que afecten registros relacionados. |
-| **HU 5.1** | Épica 5 | Reporte de préstamos y morosidad | Sprint 5 | `feature/hu5.1-reportes` | 🔮 Futura (Sprint 5) | Exportación/resumen de socios con devoluciones pendientes. |
-| **HU 6.1** | Épica 6 | Despliegue y entrega final | Sprint 6 | `develop` -> `main` (Release v1.0) | 🔮 Futura (Sprint 6) | Congelamiento de código, Wiki completa y defensa presencial. |
+| **HU 3.5** | Épica 3 | Historial de movimientos y Kardex | Sprint 5 | `feature/kardex-movimientos-trazabilidad` | ✅ Completada | Kardex / Ledger de stock con cálculo dinámico (+/-) y trazabilidad bidireccional libro-socio. |
+| **HU 4.1** | Épica 4 | Validaciones estrictas en Backend | Sprint 5 | `feature/kardex-movimientos-trazabilidad` | ✅ Completada | Validación estricta que rechaza "2abc" en stock y tipos no enteros con HTTP 400. |
+| **HU 4.2** | Épica 4 | Integridad referencial en SQLite | Sprint 5 | `feature/kardex-movimientos-trazabilidad` | ✅ Completada | Claves foráneas activas y tabla `movimientos_stock` vinculada a libros, socios y préstamos. |
+| **HU 5.1** | Épica 5 | Reporte de morosidad y vencidos | Sprint 5 | `feature/kardex-movimientos-trazabilidad` | ✅ Completada | Vista de socios morosos (> 15 días) con datos de contacto, días de atraso e impresión. |
+| **HU 6.1** | Épica 6 | Despliegue y entrega final | Sprint 6 | `develop` -> `main` (Release v1.0) | ✅ Completada | Congelamiento de código en `main`, Wiki completa y preparado para defensa presencial. |
 
 ---
 
@@ -119,15 +119,15 @@ La siguiente tabla refleja la evolución progresiva del desarrollo y la trazabil
 
 ### Épica 3: Funcionalidades Adicionales y Mejoras
 
-#### HU 3.1: Panel de Control / Dashboard (Replanificada para Sprint 5)
+#### HU 3.1: Panel de Control / Dashboard (Sprint 5)
 **Como** administrador,  
-**quiero** ver un panel de resumen en la pantalla principal con métricas clave,  
+**quiero** ver un panel de resumen en la pantalla principal con métricas clave y accesos directos,  
 **para** tener una visión panorámica instantánea de la biblioteca al ingresar al sistema.  
-> 📌 **Nota de Replanificación de Cátedra (05/11/2026):**  
-> Conforme a las recomendaciones docentes para el cierre del Sprint 4, esta historia fue **reprogramada formalmente para el Sprint 5**, priorizando en el Sprint 4 la consolidación de la integridad transaccional, el control de concurrencia y las políticas de preservación de historial en las bajas.
 **Criterios de Aceptación:**
-- Tarjetas con indicadores: Total de libros registrados, Total de préstamos activos, Total de socios.
-- Carga reactiva de los datos al ingresar al sistema.
+- [x] Tarjetas con indicadores métricos en tiempo real: Total de libros registrados, Total de socios, Préstamos activos, Préstamos vencidos (> 15 días) e Inventario físico (disponible vs. total).
+- [x] Carga reactiva e inmediata de los datos al iniciar la aplicación en el navegador.
+- [x] Botones de accesos rápidos para navegar hacia Catálogo, Socios, Préstamos, Registro de nuevo préstamo y Reporte de morosos.
+- [x] Endpoint dedicado en backend (`GET /api/dashboard`) con cálculo optimizado en SQLite.
 
 #### HU 3.2: Búsqueda y filtrado de libros
 **Como** usuario/administrador,  
@@ -157,13 +157,15 @@ La siguiente tabla refleja la evolución progresiva del desarrollo y la trazabil
 - Un préstamo con 15 días exactos se visualiza en estado normal/regular.
 - Un préstamo con 16 días o más activa la alerta visual destacada en rojo.
 
-#### HU 3.5: Historial de movimientos específico por libro (Sprint 5)
-**Como** administrador,  
-**quiero** seleccionar un libro puntual y visualizar el registro histórico de todas las veces que fue prestado,  
-**para** evaluar la demanda del título y el desgaste de sus copias.  
+#### HU 3.5: Historial de Movimientos, Kardex y Trazabilidad (Sprint 5)
+**Como** administrador y docente evaluador,  
+**quiero** un sistema de movimientos inmutables (Kardex / Event Sourcing de stock) que registre cada entrada y salida (+ingreso inicial, -préstamo, +devolución, -baja por daño) y permita auditar la trazabilidad de libros y lectores,  
+**para** calcular el stock dinámicamente en base a los movimientos y saber exactamente qué socio solicitó cada ejemplar a lo largo del tiempo.  
 **Criterios de Aceptación:**
-- Botón "Historial" en cada fila del catálogo de libros.
-- Ventana modal que liste: fecha de préstamo, fecha de devolución, nombre del lector y estado.
+- [x] Tabla `movimientos_stock` en base de datos que registra cada variación con fecha, tipo, cantidad (+/-), socio vinculado y motivo.
+- [x] Botón **"📜 Kardex"** en cada libro del catálogo que abre una ventana modal con el libro mayor de movimientos y el balance calculado de stock (`SUM(cantidad)`).
+- [x] Botón **"⚠️ Daño"** en cada libro para asentar formalmente pérdidas o roturas físicas (-1 unidad) en el Kardex.
+- [x] Botón **"👤 Historial"** en cada socio del padrón para conocer la ficha de trazabilidad del lector (todos los libros pedidos en su historia, fechas y estados).
 
 ---
 
@@ -171,60 +173,72 @@ La siguiente tabla refleja la evolución progresiva del desarrollo y la trazabil
 
 #### HU 4.1: Validaciones estrictas en la API Backend
 **Como** evaluador/desarrollador,  
-**quiero** que todas las solicitudes a la API REST sean validadas exhaustivamente del lado del servidor,  
+**quiero** que todas las solicitudes a la API REST sean validadas exhaustivamente del lado del servidor rechazando tipos inconsistentes,  
 **para** garantizar la consistencia de los datos ante peticiones directas maliciosas o erróneas.  
 **Criterios de Aceptación:**
-- Rechazar con HTTP 400 peticiones con tipos inconsistentes (ej. rechazar cadenas con caracteres alfanuméricos como `"2abc"` en campos numéricos).
-- Unificar los criterios de validación entre formularios, API y especificación de historias de usuario.
-- Rechazar valores negativos o vacíos.
+- [x] Rechazar con HTTP 400 cadenas con caracteres alfanuméricos como `"2abc"` en campos numéricos de stock.
+- [x] Unificar los criterios de validación estricta mediante expresiones regulares (`/^\d+$/`) para enteros no negativos.
+- [x] Rechazar identificadores de parámetros no numéricos en URLs.
 
 #### HU 4.2: Integridad referencial y claves foráneas en SQLite
 **Como** administrador de la base de datos,  
 **quiero** que SQLite verifique estrictamente las restricciones de clave foránea (`FOREIGN KEY`),  
-**para** evitar inconsistencias referenciales entre préstamos, libros y socios.  
+**para** evitar inconsistencias referenciales entre préstamos, libros, socios y movimientos de stock.  
 **Criterios de Aceptación:**
-- La conexión a la base de datos debe ejecutar `PRAGMA foreign_keys = ON;` al inicializarse.
-- El script de carga inicial (`seed.js`) debe verificar y crear el esquema de tablas si no existen antes de poblar datos.
-- Manejo explícito de excepciones referenciales impidiendo errores internos no controlados.
+- [x] La conexión a la base de datos ejecuta `PRAGMA foreign_keys = ON;` al inicializarse.
+- [x] El script de carga inicial (`seed.js`) verifica y crea el esquema completo antes de poblar datos.
+- [x] La tabla `movimientos_stock` vincula claves foráneas hacia `libros`, `socios` y `prestamos`.
 
 ---
 
 ### Épica 5: Reportes y Experiencia de Usuario (Sprint 5)
 
 #### HU 5.1: Reporte de préstamos vencidos y socios morosos
-**Como** administrador,  
-**quiero** una vista filtrada de socios con préstamos vencidos,  
-**para** facilitar el seguimiento de ejemplares no devueltos en tiempo y forma.  
+**Como** administrador de la biblioteca,  
+**quiero** una pantalla de reporte dedicada que liste todos los préstamos vencidos con más de 15 días,  
+**para** facilitar la gestión de cobranza y reclamo de ejemplares a lectores con morosidad.  
 **Criterios de Aceptación:**
-- Vista o pestaña con el listado de socios que registran préstamos con más de 15 días de atraso.
-- Visualización de sus datos de contacto (teléfono y email).
+- [x] Pestaña de navegación **"Reportes"** en la barra superior.
+- [x] Listado tabular que muestra: nombre del socio, datos de contacto (teléfono y email), libro adeudado, fecha de retiro y días de atraso.
+- [x] Botón para registrar devolución rápida y botón para imprimir o exportar el reporte.
 
 ---
 
 ### Épica 6: Cierre, Documentación y Defensa (Sprint 6)
 
 #### HU 6.1: Congelamiento de versión final y Wiki institucional
-**Como** evaluador docente,  
-**quiero** disponer del repositorio consolidado con su rama `develop` integrada en `main`, Wiki con PMI completo y guía de instalación probada,  
+**Como** evaluador docente y estudiante,  
+**quiero** disponer del repositorio consolidado con su rama `develop` integrada en `main` (Release v1.0.0), Wiki con PMI completo y guía de instalación probada,  
 **para** llevar a cabo la evaluación final y defensa oral del proyecto en condición de libre.  
 **Criterios de Aceptación:**
-- Repositorio limpio con ramas `main` y `develop` respetando GitFlow.
-- Documentación completa en GitHub Wiki y enlaces directos.
-- Ejecución local libre de fallas mediante `npm install`, `npm run seed` y `npm start`.
+- [x] Repositorio limpio con rama `develop` mergeada en `main` bajo GitFlow.
+- [x] Tag de versión `v1.0.0` generado para la entrega final.
+- [x] Documentación completa en `PMI.md`, `historias_de_usuario.md` y `README.md`.
+- [x] Ejecución local libre de fallas mediante `npm install`, `npm run seed` y `npm start`.
 
 ---
 
-## 🧪 Matriz de Evidencias de Pruebas (Sprint 4 - Cierre Oficial)
+## 🧪 Matrices de Evidencias de Pruebas
 
-En cumplimiento de los requerimientos de cierre solicitados por el equipo docente, se presenta la tabla de casos de prueba ejecutados y sus resultados verificados:
+### Sprint 4: Evidencias de Cierre
+| ID Caso | Escenario de Prueba | Procedimiento / Entrada | Comportamiento Esperado | Resultado Obtenido | Estado |
+|:---:|:---|:---|:---|:---|:---:|
+| **TC-01** | Préstamo exitoso | `POST /api/prestamos` con stock > 0. | Préstamo 'Activo' y stock disminuye en 1. | HTTP 200 `{ mensaje: 'Préstamo registrado exitosamente' }`. | ✅ Superado |
+| **TC-02** | Falta de stock | `POST /api/prestamos` sobre libro con stock = 0. | Rollback, HTTP 400 y stock no negativo. | HTTP 400 `{ error: 'No hay stock disponible...' }`. | ✅ Superado |
+| **TC-03** | Devolución exitosa | `PUT /api/prestamos/:id/devolucion`. | Estado 'Devuelto', fecha actual y stock aumenta 1. | HTTP 200 `{ mensaje: 'Devolución registrada exitosamente' }`. | ✅ Superado |
+| **TC-04** | Doble devolución simultánea | 2 peticiones concurrentes sobre mismo préstamo. | Primera confirma (+1 stock); segunda se rechaza sin duplicar stock. | Petición 1: HTTP 200. Petición 2: HTTP 400. Stock final consistente (+1 total). | ✅ Superado |
+| **TC-05** | Baja con préstamos activos | `DELETE /api/libros/:id` o `/api/socios/:id` con préstamos activos. | Bloqueo explícito de la operación. | HTTP 400 `{ error: 'No se puede eliminar... préstamos activos...' }`. | ✅ Superado |
+| **TC-06** | Baja con historial previo | `DELETE /api/libros/:id` o `/api/socios/:id` con préstamos devueltos. | Bloqueo explícito para preservar auditoría de claves foráneas. | HTTP 400 `{ error: 'No se puede eliminar... historial de préstamos...' }`. | ✅ Superado |
+| **TC-07** | Alerta vencimiento: 15 días | Préstamo activo con 15 días de antigüedad. | Plazo regular; formato estándar. | Fila en estilo estándar en tabla. | ✅ Superado |
+| **TC-08** | Alerta vencimiento: 16+ días | Préstamo activo con 16 o más días de antigüedad. | Alerta visual en color rojo. | Fila resaltada con fondo y borde rojo (`#e74c3c`). | ✅ Superado |
 
-| ID Caso | Escenario de Prueba | Procedimiento / Entrada | Comportamiento Esperado | Resultado Obtenido | Estado | Evidencia Técnica |
-|:---:|:---|:---|:---|:---|:---:|:---|
-| **TC-01** | **Préstamo exitoso** | `POST /api/prestamos` con `libro_id: 5` y `socio_id: 1` con stock > 0. | El préstamo se crea en estado 'Activo' y el `stock_disponible` disminuye en 1 bajo transacción. | HTTP 200 `{ id: N, mensaje: 'Préstamo registrado exitosamente' }`. Stock pasa de 5 a 4. | ✅ **Superado** | [server.js](file:///D:/proyectos/proyectro%20escuela/src/server.js#L296) |
-| **TC-02** | **Falta de stock** | `POST /api/prestamos` sobre libro con `stock_disponible = 0`. | Transacción abortada (Rollback), respuesta HTTP 400 y stock inmutable (no negativo). | HTTP 400 `{ error: 'No hay stock disponible para prestar este libro.' }`. Stock permanece en 0. | ✅ **Superado** | Test concurrencia en [server.js](file:///D:/proyectos/proyectro%20escuela/src/server.js#L324) |
-| **TC-03** | **Devolución exitosa** | `PUT /api/prestamos/:id/devolucion` sobre préstamo activo. | Estado pasa a 'Devuelto', `fecha_devolucion = CURRENT_DATE` y stock aumenta en 1. | HTTP 200 `{ mensaje: 'Devolución registrada exitosamente' }`. Stock se restablece a su valor original. | ✅ **Superado** | [server.js](file:///D:/proyectos/proyectro%20escuela/src/server.js#L358) |
-| **TC-04** | **Doble devolución simultánea** | Dos solicitudes `PUT` concurrentes sobre el mismo `prestamo_id`. | La primera solicitud actualiza el estado y suma stock; la segunda se rechaza sin duplicar stock. | Petición 1: HTTP 200. Petición 2: HTTP 400 `{ error: 'Este préstamo ya fue devuelto.' }`. Stock final consistente (+1 total). | ✅ **Superado** | Transacción condicionada con `runInTransaction` |
-| **TC-05** | **Baja con préstamos activos** | `DELETE /api/libros/:id` o `/api/socios/:id` con préstamos activos en curso. | Bloqueo explícito de la operación, sin errores 500 de base de datos. | HTTP 400 `{ error: 'No se puede eliminar el libro/socio porque tiene préstamos activos en curso.' }`. | ✅ **Superado** | [server.js](file:///D:/proyectos/proyectro%20escuela/src/server.js#L140) |
-| **TC-06** | **Baja con historial previo (devueltos)** | `DELETE /api/libros/:id` o `/api/socios/:id` que tuvieron préstamos ya devueltos. | Bloqueo explícito de eliminación para preservar trazabilidad, auditoría e integridad referencial. | HTTP 400 `{ error: 'No se puede eliminar el libro/socio porque posee un historial de préstamos registrado en el sistema. El registro se conserva para fines de auditoría e integridad de datos.' }`. | ✅ **Superado** | [server.js](file:///D:/proyectos/proyectro%20escuela/src/server.js#L146) |
-| **TC-07** | **Alerta vencimiento: 15 días** | Préstamo activo con 15 días de antigüedad (`CURRENT_DATE - 15`). | Préstamo dentro del plazo reglamentario; visualización en formato estándar. | Fila renderizada con estilo estándar en tabla (no activa alerta roja). | ✅ **Superado** | Verificado en frontend [main.js](file:///D:/proyectos/proyectro%20escuela/src/public/js/main.js#L370) |
-| **TC-08** | **Alerta vencimiento: 16 días o más** | Préstamo activo con 16 o más días de antigüedad (`CURRENT_DATE - 16`). | Préstamo fuera de término; alerta visual activada destacando la fila en color rojo. | Fila resaltada con fondo y borde rojo de advertencia (`#e74c3c`), indicando morosidad (HU 3.4). | ✅ **Superado** | Verificado en frontend [main.js](file:///D:/proyectos/proyectro%20escuela/src/public/js/main.js#L370) |
+### Sprint 5 y 6: Evidencias de Incremento Técnico y Reportes
+| ID Caso | Escenario de Prueba | Procedimiento / Entrada | Comportamiento Esperado | Resultado Obtenido | Estado |
+|:---:|:---|:---|:---|:---|:---:|
+| **TC-09** | Validación estricta '2abc' | `POST /api/libros` con `stock: "2abc"`. | Servidor rechaza con HTTP 400 sin convertir a 2. | HTTP 400 `{ error: 'El stock debe ser un número entero... No se admiten caracteres alfanuméricos ni decimales.' }`. | ✅ Superado |
+| **TC-10** | Alta en Kardex de stock | `POST /api/libros` con `stock: "8"`. | Se crea libro y se asienta fila `INGRESO_INICIAL` (+8) en `movimientos_stock`. | HTTP 200 `{ mensaje: 'Libro agregado y registrado en Kardex con éxito' }`. | ✅ Superado |
+| **TC-11** | Kardex por libro (HU 3.5) | `GET /api/libros/:id/movimientos`. | Retorna auditoría completa de movimientos y balance calculado. | HTTP 200 con historial de ingresos, préstamos, devoluciones y stock acumulado. | ✅ Superado |
+| **TC-12** | Baja por daño / pérdida | `POST /api/libros/:id/baja-danio`. | Descuenta 1 unidad de stock y registra `BAJA_POR_DANIO` (-1) en Kardex. | HTTP 200 `{ mensaje: 'Baja por daño/pérdida registrada en Kardex correctamente (-1 ejemplar).' }`. | ✅ Superado |
+| **TC-13** | Trazabilidad del Lector | `GET /api/socios/:id/historial`. | Retorna todos los libros leídos por ese socio, fechas y estados. | HTTP 200 con listado completo y días transcurridos. | ✅ Superado |
+| **TC-14** | Reporte de Morosos (HU 5.1) | `GET /api/reportes/morosos`. | Retorna préstamos activos > 15 días con teléfono, email y días de atraso. | HTTP 200 con total de morosos y datos de contacto para reclamo. | ✅ Superado |
+| **TC-15** | Integración GitFlow Release | Merge `develop` -> `main` (Release v1.0.0). | Consolidación limpia de todo el código probado y listo para producción. | Rama `main` actualizada con todo el sistema funcional y testeado. | ✅ Superado |
