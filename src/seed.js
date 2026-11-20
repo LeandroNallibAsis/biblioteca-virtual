@@ -21,7 +21,7 @@ const socios = [
 ];
 
 db.serialize(() => {
-    // Asegurar que las tablas existan antes de insertar datos (corrige ejecuciones en repositorios recién clonados)
+    // Asegurar esquema completo
     db.run(`CREATE TABLE IF NOT EXISTS libros (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         titulo TEXT NOT NULL,
@@ -50,12 +50,33 @@ db.serialize(() => {
         FOREIGN KEY(socio_id) REFERENCES socios(id)
     )`);
 
-    // Insertar libros
+    db.run(`CREATE TABLE IF NOT EXISTS movimientos_stock (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        libro_id INTEGER NOT NULL,
+        socio_id INTEGER,
+        prestamo_id INTEGER,
+        tipo TEXT NOT NULL,
+        cantidad INTEGER NOT NULL,
+        motivo TEXT,
+        fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(libro_id) REFERENCES libros(id),
+        FOREIGN KEY(socio_id) REFERENCES socios(id),
+        FOREIGN KEY(prestamo_id) REFERENCES prestamos(id)
+    )`);
+
+    // Insertar libros y registrar su ingreso inicial en movimientos_stock (Kardex)
     const stmtLibros = db.prepare("INSERT OR IGNORE INTO libros (titulo, autor, genero, isbn, stock_total, stock_disponible) VALUES (?, ?, ?, ?, ?, ?)");
+    const stmtMov = db.prepare("INSERT INTO movimientos_stock (libro_id, tipo, cantidad, motivo) VALUES (?, 'INGRESO_INICIAL', ?, 'Carga inicial de catálogo')");
+
     libros.forEach(l => {
-        stmtLibros.run(l.titulo, l.autor, l.genero, l.isbn, l.stock, l.stock);
+        stmtLibros.run(l.titulo, l.autor, l.genero, l.isbn, l.stock, l.stock, function () {
+            if (this.lastID) {
+                stmtMov.run(this.lastID, l.stock);
+            }
+        });
     });
     stmtLibros.finalize();
+    stmtMov.finalize();
 
     // Insertar socios
     const stmtSocios = db.prepare("INSERT OR IGNORE INTO socios (nombre, telefono, email) VALUES (?, ?, ?)");
@@ -66,5 +87,5 @@ db.serialize(() => {
 });
 
 db.close(() => {
-    console.log("Datos de prueba (5 libros y 5 socios) cargados exitosamente.");
+    console.log("Datos de prueba (5 libros, 5 socios y movimientos iniciales de Kardex) cargados exitosamente.");
 });
