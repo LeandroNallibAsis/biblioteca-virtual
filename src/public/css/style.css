@@ -31,17 +31,218 @@ nav a {
     color: white;
     text-decoration: none;
     font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.2s;
 }
 
-nav a:hover {
-    text-decoration: underline;
+nav a:hover, nav a.active {
+    background: rgba(255, 255, 255, 0.2);
+    text-decoration: none;
 }
 
 main {
     padding: 2rem;
-    max-width: 800px;
+    max-width: 950px;
     margin: 0 auto;
     background: #fdfbf7; /* Blanco hueso suave */
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     min-height: 80vh;
+}
+
+/* --- Estilos del Dashboard (HU 3.1) --- */
+.dashboard-header {
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+}
+
+.dashboard-header p {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border: 1px solid #eef2f5;
+    border-left: 5px solid #3498db;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.books { border-left-color: #2980b9; }
+.metric-card.members { border-left-color: #27ae60; }
+.metric-card.loans { border-left-color: #f39c12; }
+.metric-card.alerts { border-left-color: #e74c3c; }
+.metric-card.stock { border-left-color: #8e44ad; }
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.metric-title {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+}
+
+.metric-icon {
+    font-size: 1.5rem;
+}
+
+.metric-value {
+    font-size: 2.3rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.metric-card.alerts .metric-value {
+    color: #c0392b;
+}
+
+.metric-desc {
+    font-size: 0.85rem;
+    color: #95a5a6;
+    margin-top: 0.4rem;
+}
+
+.dashboard-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.dashboard-actions h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.btn-action {
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: white;
+    transition: opacity 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-action:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.btn-blue { background: #2980b9; }
+.btn-green { background: #27ae60; }
+.btn-orange { background: #e67e22; }
+.btn-dark { background: #34495e; }
+.btn-purple { background: #8e44ad; }
+
+/* --- Modal y Overlay (Kardex, Historiales, Bajas) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 1.8rem;
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #718096;
+}
+
+.badge-in {
+    background-color: #27ae60;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.badge-out {
+    background-color: #e74c3c;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.badge-warning {
+    background-color: #d35400;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
 }

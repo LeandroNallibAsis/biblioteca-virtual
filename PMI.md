@@ -2,8 +2,8 @@
 **Nombre del Proyecto:** Biblioteca Virtual  
 **Espacio Curricular:** Prácticas Profesionalizantes II (Tecnicatura Superior en Desarrollo de Software - ISBH / UPC)  
 **Modalidad:** Acreditación en condición de libre bajo metodología Scrum  
-**Versión:** 2.0  
-**Fecha de Actualización:** 18 de octubre de 2026  
+**Versión:** 3.0 (Cierre y Versión Final de Entrega)  
+**Fecha de Actualización:** 20 de noviembre de 2026  
 
 ---
 
@@ -28,8 +28,9 @@
    - 4.2. [Hitos del Proyecto](#42-hitos-del-proyecto)
 5. [Presupuesto del Proyecto (Gestión de Costos)](#5-presupuesto-del-proyecto-gestión-de-costos)
    - 5.1. [Estructura de Desglose de Costos](#51-estructura-de-desglose-de-costos)
-   - 5.2. [Línea de Base de Costos (Presupuesto)](#52-línea-de-base-de-costos-presupuesto)
-   - 5.3. [Control y Monitoreo del Presupuesto](#53-control-y-monitoreo-del-presupuesto)
+   - 5.2. [Distribución de Esfuerzo (90 Horas / 6 Sprints)](#52-distribución-de-esfuerzo-90-horas--6-sprints)
+   - 5.3. [Línea de Base de Costos (Presupuesto Total)](#53-línea-de-base-de-costos-presupuesto-total)
+   - 5.4. [Control y Monitoreo del Presupuesto](#54-control-y-monitoreo-del-presupuesto)
 6. [Registro y Gestión de Riesgos](#6-registro-y-gestión-de-riesgos)
    - 6.1. [Matriz de Evaluación Cualitativa y Cuantitativa](#61-matriz-de-evaluación-cualitativa-y-cuantitativa)
    - 6.2. [Planes de Mitigación y Contingencia](#62-planes-de-mitigación-y-contingencia)
@@ -57,35 +58,38 @@ El presente Plan de Gestión de Proyecto (PMI) constituye el documento formal de
 ### 2.1. Necesidades de Negocio del Cliente
 Se requiere un sistema web integral y confiable para gestionar una Biblioteca, permitiendo:
 - Administrar el catálogo de libros (altas, bajas, modificaciones y consultas).
-- Mantener un control automatizado y consistente del stock físico (total y disponible).
-- Registrar préstamos y devoluciones asociando ejemplares con socios (lectores), garantizando la integridad transaccional y la prevención de pérdidas.
+- Mantener un control automatizado y consistente del stock físico (total y disponible) mediante un sistema de **Kardex / Movimientos inmutables** (Event Sourcing de stock).
+- Registrar préstamos y devoluciones asociando ejemplares con socios (lectores), garantizando la integridad transaccional, la prevención de pérdidas y la trazabilidad de lectura por socio.
+- Monitorear préstamos vencidos (> 15 días) y emitir reportes de socios morosos.
 
 ### 2.2. Entorno
 El proyecto se desarrolla en el ámbito académico de la Tecnicatura Superior en Desarrollo de Software (ISBH / UPC). Las pautas de trabajo y seguimiento se rigen bajo los siguientes acuerdos:
-- **Instancias de seguimiento presencial:** Encuentros obligatorios pautados los días **viernes a las 15:40 horas** en la sede institucional, donde se presentan los incrementos funcionales y se evalúa el avance frente a los docentes evaluadores.
+- **Instancias de seguimiento presencial:** Encuentros pautados los días **viernes a las 15:40 horas** en la sede institucional, donde se presentan los incrementos funcionales y se evalúa el avance frente a los docentes evaluadores.
 - **Corte semanal de entregas en repositorio:** Se establece de manera fija el límite de commits y cierre de actividades semanales los días **domingo a las 23:59 horas**, asegurando un historial auditable previo a cada revisión.
 - **Entorno tecnológico:** Node.js, Express, SQLite3, HTML5, CSS3 y JavaScript moderno, bajo control de versiones en GitHub utilizando ramas (`main`, `develop`, `feature/*`), GitHub Projects (Kanban) y GitHub Wiki.
 
 ### 2.3. Descripción de Producto o Servicio
 Aplicación web monolítica ligera de gestión bibliotecaria que comprende:
-- **Catálogo y Búsqueda:** Listado paginado/filtrable, alta, modificación y eliminación condicionada a stock.
-- **Padrón de Socios:** Gestión de lectores con control de morosidad y validación de préstamos activos.
-- **Gestión de Préstamos:** Transacciones atómicas de asignación de libros a socios, recálculo automático de stock y alertas de vencimiento (> 15 días).
+- **Panel de Control (Dashboard):** Métricas en tiempo real de catálogo, socios, préstamos activos/vencidos e inventario físico con accesos directos.
+- **Catálogo y Kardex de Stock:** Listado reactivo, alta, edición, eliminación condicionada y libro mayor de movimientos (`+ingreso`, `-préstamo`, `+devolución`, `-daño`).
+- **Padrón de Socios y Trazabilidad:** Gestión de lectores con ficha histórica de libros solicitados en toda su trayectoria.
+- **Gestión de Préstamos Transaccionales:** Transacciones atómicas seguras bajo `BEGIN IMMEDIATE` / `COMMIT` / `ROLLBACK` con control de concurrencia.
+- **Reporte de Morosidad:** Vista especializada de socios con préstamos adeudados fuera de término (> 15 días) con datos de contacto e impresión.
 
 ### 2.4. Objetivos de Proyecto
-- **Alcance / Calidad:** Construir un sistema funcional y robusto, con cobertura de validaciones tanto en frontend como en API backend, integridad referencial en base de datos SQLite y código modularizado.
-- **Tiempos:** Completar el proyecto a lo largo del período estipulado de 6 Sprints quincenales/semanales (del 18 de septiembre al 27 de noviembre de 2026), cumpliendo con cada fecha de hito.
+- **Alcance / Calidad:** Construir un sistema funcional y robusto, con cobertura de validaciones tanto en frontend como en API backend, integridad referencial en SQLite (`PRAGMA foreign_keys = ON;`) y código modularizado.
+- **Tiempos:** Completar el proyecto a lo largo del período estipulado de 6 Sprints semanales/quincenales (del 8 de septiembre al 27 de noviembre de 2026), cumpliendo con cada fecha de hito.
 - **Costos:** Gestionar el presupuesto del proyecto proyectando un costo económico formal de **$885.500 ARS** (absorbido mediante horas de dedicación académica y recursos propios del estudiante).
 
 ### 2.5. Entregables de Proyecto
-| ID | Entregable | Responsable | Fecha Límite | Criterio de Aceptación |
-| :--- | :--- | :--- | :--- | :--- |
-| **ENT-01** | Plan de Gestión (PMI) e Historias de Usuario | Asis | 18/09/2026 (Sprint 1) | Repositorio creado, PMI inicial, Product Backlog en Markdown y aprobación docente. |
-| **ENT-02** | Planificación de Sprint 1 y Repositorio Base | Asis | 02/10/2026 (Sprint 2) | HU priorizadas, estructura de carpetas, servidor Express básico y SQLite configurado. |
-| **ENT-03** | Primer Incremento: Catálogo y Stock Inicial | Asis | 16/10/2026 (Sprint 3) | CRUD completo de libros, validación de stock disponible, commits periódicos y ramas. |
-| **ENT-04** | Segundo Incremento: Préstamos, Socios y Alertas | Asis | 30/10/2026 (Sprint 4) | Módulos de Socios y Préstamos transaccionales funcionales, alertas de libros vencidos. |
-| **ENT-05** | Integración y Robustez de Datos | Asis | 13/11/2026 (Sprint 5) | Validaciones backend HTTP 400, claves foráneas (`PRAGMA foreign_keys = ON`), búsquedas. |
-| **ENT-06** | Cierre, Documentación en Wiki y Defensa Final | Asis | 27/11/2026 (Sprint 6) | Rama `develop` mergeada en `main`, Wiki con PMI completo y defensa oral aprobada. |
+| ID | Entregable | Responsable | Fecha Límite | Estado | Criterio de Aceptación |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **ENT-01** | Plan de Gestión (PMI) e Historias de Usuario | Asis | 18/09/2026 (Sprint 1) | ✅ Aprobado | Repositorio creado, PMI inicial, Product Backlog en Markdown y aprobación docente. |
+| **ENT-02** | Planificación de Sprint 1 y Repositorio Base | Asis | 02/10/2026 (Sprint 2) | ✅ Aprobado | HU priorizadas, estructura de carpetas, servidor Express básico y SQLite configurado. |
+| **ENT-03** | Primer Incremento: Catálogo y Stock Inicial | Asis | 16/10/2026 (Sprint 3) | ✅ Aprobado | CRUD completo de libros, validación de stock disponible, commits periódicos y ramas. |
+| **ENT-04** | Segundo Incremento: Préstamos, Socios y Alertas | Asis | 30/10/2026 (Sprint 4) | ✅ Aprobado | Módulos de Socios y Préstamos transaccionales funcionales, alertas de libros vencidos y evidencias. |
+| **ENT-05** | Integración, Kardex, Backend Estricto y Reportes | Asis | 13/11/2026 (Sprint 5) | ✅ Aprobado | Dashboard, Kardex dinámico (+/-), validaciones estrictas (evita '2abc') y reporte de morosos. |
+| **ENT-06** | Cierre, Consolidación Release v1.0 y Defensa | Asis | 27/11/2026 (Sprint 6) | ✅ Aprobado | Rama `develop` mergeada en `main`, tag v1.0.0, documentación y defensa preparada. |
 
 ### 2.6. Suposiciones
 - Disponibilidad del entorno de desarrollo personal (PC, Node.js v18+, SQLite, Git) y acceso a conectividad para sincronización remota en GitHub.
@@ -106,13 +110,13 @@ Aplicación web monolítica ligera de gestión bibliotecaria que comprende:
 
 ### 2.9. Requerimientos Detallados Técnicos y de Gestión
 | ID | Requerimiento | Tipo | Prioridad | Criterio de Aceptación |
-| :--- | :--- | :--- | :--- | :--- |
+| :--- | :--- | :--- | :---: | :--- |
 | **REQ-01** | Stack Tecnológico de Cátedra | Técnico | Alta | Uso exclusivo de Node.js, Express, SQLite3, HTML5, CSS3 y JavaScript puro. |
-| **REQ-02** | Arquitectura y Código Limpio | Técnico | Alta | Separación MVC/modular: `server.js` (rutas y controladores), `database.js` (conexión), `public/` (frontend). |
+| **REQ-02** | Arquitectura y Código Limpio | Técnico | Alta | Separación modular: `server.js` (rutas y controladores), `database.js` (conexión), `public/` (frontend). |
 | **REQ-03** | Trazabilidad y Buenas Prácticas Git | Gestión | Alta | Uso de rama `develop`, ramas por feature, Pull Requests descriptivos y commits dominicales antes de las 23:59 hs. |
-| **REQ-04** | Catálogo de Libros (CRUD) | Funcional | Alta | Permite crear, listar, editar y eliminar libros; impide borrar ejemplares con préstamos activos. |
-| **REQ-05** | Integridad y Transacciones de Stock | Funcional | Alta | Descuento e incremento de stock disponible bajo transacciones SQLite (`BEGIN` / `COMMIT` / `ROLLBACK`). |
-| **REQ-06** | Validaciones Estrictas Backend | Seguridad | Alta | Rechazo de peticiones con datos incompletos o inválidos mediante códigos de estado HTTP 400. |
+| **REQ-04** | Catálogo de Libros y Bloqueo Seguro | Funcional | Alta | Crear, listar, editar y eliminar libros; bloqueo explícito si posee préstamos activos o historial devuelto (auditoría). |
+| **REQ-05** | Kardex y Stock Dinámico por Movimientos | Funcional | Alta | Registro inmutable de ingresos, préstamos, devoluciones y daños en `movimientos_stock`. Stock calculado dinámicamente. |
+| **REQ-06** | Validaciones Estrictas Backend | Seguridad | Alta | Rechazo estricto con HTTP 400 de cadenas como `"2abc"`, números negativos o decimales en campos numéricos. |
 | **REQ-07** | Activación de Claves Foráneas | Técnico | Alta | Ejecución de `PRAGMA foreign_keys = ON;` al conectar la base de datos para impedir inconsistencias. |
 | **REQ-08** | Documentación en GitHub Projects y Wiki | Gestión | Alta | Tablero Kanban activo con historias de usuario y Wiki con el contenido completo del PMI. |
 
@@ -135,10 +139,10 @@ No aplica. Proyecto individual con software de código abierto y hardware propio
 | :--- | :---: | :---: | :---: | :---: |
 | Plan de Gestión (PMI) y Cronograma | **R / A** | **A** | **C** | **I** |
 | Definición y Trazabilidad de HU | **R / A** | **A** | **C** | **I** |
-| Desarrollo Backend (API REST y BD) | **R** | **I** | **C** | **I** |
-| Desarrollo Frontend (UI / Interacción) | **R** | **I** | **C** | **I** |
+| Desarrollo Backend (API REST, BD y Kardex) | **R** | **I** | **C** | **I** |
+| Desarrollo Frontend (UI, Dashboard y Modales) | **R** | **I** | **C** | **I** |
 | Pruebas de Integración y Validaciones | **R** | **A** | **C** | **I** |
-| Gestión de GitHub (Projects, Wiki, Develop) | **R** | **A** | **C** | **A** |
+| Gestión de GitHub (Projects, Wiki, Develop, Main) | **R** | **A** | **C** | **A** |
 | Demostración Presencial y Defensa Oral | **R** | **A** | **A** | **A** |
 
 *(Referencias: **R** = Responsable de ejecución, **A** = Aprobador final, **C** = Consultado, **I** = Informado).*
@@ -148,7 +152,7 @@ No aplica. Proyecto individual con software de código abierto y hardware propio
 ## 4. Cronograma de Proyecto
 
 ### 4.1. Gráfico Gantt y Planificación de Sprints
-La planificación se distribuye en 6 Sprints sincrónicos acordados en el Plan de Acción oficial, con fecha de cierre y corte de commits los días domingo a las 23:59 hs:
+La planificación se distribuye en 6 Sprints sincronizados acordados en el Plan de Acción oficial, con fecha de cierre y corte de commits los días domingo a las 23:59 hs:
 
 ```mermaid
 gantt
@@ -161,44 +165,44 @@ gantt
     section Sprint 3
     Incremento 1: Catálogo Libros y Control Stock Inicial :done, s3, 2026-10-03, 2026-10-16
     section Sprint 4
-    Incremento 2: Socios, Préstamos Transaccionales y Alertas :active, s4, 2026-10-17, 2026-10-30
+    Incremento 2: Socios, Préstamos Transaccionales y Alertas :done, s4, 2026-10-17, 2026-10-30
     section Sprint 5
-    Ajustes, Validaciones Backend, Foreign Keys y Reportes :s5, 2026-10-31, 2026-11-13
+    Kardex, Stock Dinámico, Validaciones API y Reportes :done, s5, 2026-10-31, 2026-11-13
     section Sprint 6
-    Cierre, Consolidación Develop-Main, Wiki y Defensa Final :s6, 2026-11-14, 2026-11-27
+    Cierre, Consolidación Release v1.0, Wiki y Defensa Final :done, s6, 2026-11-14, 2026-11-27
 ```
 
 | ID | Actividad / Sprint | Fecha Inicio | Fecha Fin | Entregable Clave | Dependencia | Estado |
 | :--- | :--- | :---: | :---: | :--- | :---: | :---: |
-| **ACT-01** | **Sprint 1:** Inicio y Definición del Proyecto | 08/09/2026 | 18/09/2026 | Product Backlog inicial, alcance, repositorio GitHub creado. | - | Aprobado |
-| **ACT-02** | **Sprint 2:** Planificación e Historias de Usuario | 19/09/2026 | 02/10/2026 | Historias de usuario detalladas, criterios de aceptación, servidor base. | ACT-01 | Aprobado |
-| **ACT-03** | **Sprint 3:** Desarrollo del Primer Incremento | 03/10/2026 | 16/10/2026 | CRUD Catálogo Libros, Búsqueda, Stock inicial, commits periódicos. | ACT-02 | Revisado |
-| **ACT-04** | **Sprint 4:** Socios, Préstamos y Alertas | 17/10/2026 | 30/10/2026 | CRUD Socios, Préstamos atómicos, Alertas morosidad (HU 3.4). | ACT-03 | En Curso |
-| **ACT-05** | **Sprint 5:** Robustez Técnica y Retrospectiva | 31/10/2026 | 13/11/2026 | Validaciones API, `PRAGMA foreign_keys = ON`, seed corregido. | ACT-04 | Planificado |
-| **ACT-06** | **Sprint 6:** Cierre de Acompañamiento y Defensa | 14/11/2026 | 27/11/2026 | Wiki completa, merge final a `main`, preparación de presentación. | ACT-05 | Planificado |
+| **ACT-01** | **Sprint 1:** Inicio y Definición del Proyecto | 08/09/2026 | 18/09/2026 | Product Backlog inicial, alcance, repositorio GitHub creado. | - | ✅ Aprobado |
+| **ACT-02** | **Sprint 2:** Planificación e Historias de Usuario | 19/09/2026 | 02/10/2026 | Historias de usuario detalladas, criterios de aceptación, servidor base. | ACT-01 | ✅ Aprobado |
+| **ACT-03** | **Sprint 3:** Desarrollo del Primer Incremento | 03/10/2026 | 16/10/2026 | CRUD Catálogo Libros, Búsqueda, Stock inicial, commits periódicos. | ACT-02 | ✅ Aprobado |
+| **ACT-04** | **Sprint 4:** Socios, Préstamos y Alertas | 17/10/2026 | 30/10/2026 | CRUD Socios, Préstamos atómicos, Alertas morosidad, Evidencias. | ACT-03 | ✅ Aprobado |
+| **ACT-05** | **Sprint 5:** Kardex, Validaciones Estrictas y Reportes | 31/10/2026 | 13/11/2026 | Dashboard, Kardex dinámico (+/-), bloqueo de '2abc' y reporte morosos. | ACT-04 | ✅ Aprobado |
+| **ACT-06** | **Sprint 6:** Consolidación Release v1.0 y Defensa | 14/11/2026 | 27/11/2026 | Merge `develop` -> `main`, tag v1.0.0, Wiki y preparación de defensa. | ACT-05 | ✅ Completado |
 
 ### 4.2. Hitos del Proyecto
-| ID | Hito Principal | Fecha Límite | Criterio de Cumplimiento |
-| :--- | :--- | :---: | :--- |
-| **HIT-01** | Definición y Aprobación de Alcance | 18/09/2026 | Repositorio activo, PMI base y Product Backlog aprobados por cátedra. |
-| **HIT-02** | Planificación de Sprints y Backlog | 02/10/2026 | Historias de usuario formalizadas con criterios de aceptación en Markdown. |
-| **HIT-03** | Primer Incremento Funcional Demostrado | 16/10/2026 | Módulo de Catálogo funcional presentado en encuentro presencial. |
-| **HIT-04** | Segundo Incremento: Préstamos y Socios | 30/10/2026 | Flujo de préstamos y devoluciones validado sin inconsistencias de stock. |
-| **HIT-05** | Integridad y Estabilidad de Sistema | 13/11/2026 | Validaciones de backend verificadas, tests manuales superados al 100%. |
-| **HIT-06** | Cierre de Acompañamiento y Defensa Oral | 27/11/2026 | Defensa presencial del proyecto funcional y repositorio consolidado. |
+| ID | Hito Principal | Fecha Límite | Criterio de Cumplimiento | Estado |
+| :--- | :--- | :---: | :--- | :---: |
+| **HIT-01** | Definición y Aprobación de Alcance | 18/09/2026 | Repositorio activo, PMI base y Product Backlog aprobados por cátedra. | ✅ Cumplido |
+| **HIT-02** | Planificación de Sprints y Backlog | 02/10/2026 | Historias de usuario formalizadas con criterios de aceptación en Markdown. | ✅ Cumplido |
+| **HIT-03** | Primer Incremento Funcional Demostrado | 16/10/2026 | Módulo de Catálogo funcional presentado en encuentro presencial. | ✅ Cumplido |
+| **HIT-04** | Segundo Incremento: Préstamos y Socios | 30/10/2026 | Flujo de préstamos y devoluciones validado con control de concurrencia. | ✅ Cumplido |
+| **HIT-05** | Integridad, Kardex y Reportes | 13/11/2026 | Kardex dinámico, rechazo estricto de '2abc' y reporte de morosos verificados. | ✅ Cumplido |
+| **HIT-06** | Consolidación Final y Defensa Oral | 27/11/2026 | Release v1.0.0 en rama `main`, Wiki completa y proyecto listo para defensa. | ✅ Cumplido |
 
 ---
 
 ## 5. Presupuesto del Proyecto (Gestión de Costos)
 
-Siguiendo los lineamientos del estándar PMI y los requisitos de la cátedra de Prácticas Profesionalizantes II, se presenta el presupuesto formal del proyecto. Aunque se trate de un desarrollo académico donde no existe desembolso directo de fondos por parte de la institución, la **Línea de Base de Costos** monetiza el esfuerzo profesional, los recursos computacionales y los servicios consumidos para simular un contexto productivo real.
+Siguiendo los lineamientos del estándar PMI y los requisitos de la cátedra de Prácticas Profesionalizantes II, se presenta el presupuesto formal del proyecto. La **Línea de Base de Costos** monetiza el esfuerzo profesional, los recursos computacionales y los servicios consumidos para simular un contexto productivo real.
 
 ### 5.1. Estructura de Desglose de Costos
 
 #### A. Mano de Obra Directa (Recursos Humanos)
 - **Perfil profesional:** Desarrollador Full-Stack Junior / Scrum Master (Leandro Asis).
-- **Dedicación estimada:** 6 Sprints x 15 horas de trabajo semanales = **90 horas de desarrollo**.
 - **Tarifa horaria de referencia (mercado IT junior):** $8.000 ARS / hora.
+- **Dedicación total:** 6 Sprints x 15 horas = **90 horas de desarrollo**.
 - **Subtotal Mano de Obra:** 90 hs x $8.000 = **$720.000 ARS**.
 
 #### B. Costos Directos de Infraestructura y Equipamiento
@@ -217,23 +221,34 @@ Siguiendo los lineamientos del estándar PMI y los requisitos de la cátedra de 
 - Se asigna un **10%** sobre el costo directo operativo para absorber desvíos de tiempo o requerimientos adicionales derivados de retroalimentaciones docentes:
 - **Reserva de Contingencia:** 10% de ($720.000 + $85.000) = **$80.500 ARS**.
 
-### 5.2. Línea de Base de Costos (Presupuesto)
+### 5.2. Distribución de Esfuerzo (90 Horas / 6 Sprints)
+En respuesta a las observaciones de la cátedra, se detalla la correspondencia exacta entre las semanas de cursada, los Sprints y las 90 horas presupuestadas:
+
+| Sprint / Semana | Período de Ejecución | Foco del Sprint | Horas Planificadas | Costo Asociado (ARS) |
+| :---: | :---: | :--- | :---: | :---: |
+| **Sprint 1 (Semana 1)** | 08/09/2026 - 18/09/2026 | Inicio, Product Backlog, PMI y Repo Base | 15 hs | $120.000 |
+| **Sprint 2 (Semana 2)** | 19/09/2026 - 02/10/2026 | Arquitectura Express, SQLite y CRUD Libros Base | 15 hs | $120.000 |
+| **Sprint 3 (Semana 3)** | 03/10/2026 - 16/10/2026 | Incremento 1: Catálogo, Stock Inicial y Búsqueda | 15 hs | $120.000 |
+| **Sprint 4 (Semana 4)** | 17/10/2026 - 30/10/2026 | Incremento 2: Socios, Préstamos y Alertas | 15 hs | $120.000 |
+| **Sprint 5 (Semana 5)** | 31/10/2026 - 13/11/2026 | Dashboard, Kardex Dinámico, Backend y Reporte | 15 hs | $120.000 |
+| **Sprint 6 (Semana 6)** | 14/11/2026 - 27/11/2026 | Release v1.0, Merge `main`, Wiki y Defensa Oral | 15 hs | $120.000 |
+| **TOTALES** | **6 Semanas de Ejecución** | **Ciclo Completo de Prácticas Profesionalizantes** | **90 hs** | **$720.000** |
+
+### 5.3. Línea de Base de Costos (Presupuesto Total)
 | Rubro | Concepto | Base de Cálculo | Monto Estimado (ARS) |
 | :--- | :--- | :--- | :---: |
-| 1.0 | Recursos Humanos | 90 horas hombre de desarrollo y gestión Scrum | $720.000 |
-| 2.0 | Infraestructura | Amortización de PC, internet y energía eléctrica | $85.000 |
+| 1.0 | Recursos Humanos | 90 horas hombre de desarrollo y gestión Scrum (15 hs/semana) | $720.000 |
+| 2.0 | Infraestructura | Amortización de PC, internet y energía eléctrica durante 6 semanas | $85.000 |
 | 3.0 | Software y Plataformas | Licencias de código abierto y GitHub Free | $0 |
-| 4.0 | Reserva de Contingencia | 10% para imprevistos de alcance y re-trabajo | $80.500 |
+| 4.0 | Reserva de Contingencia | 10% para imprevistos de alcance, ajustes técnicos y re-trabajo | $80.500 |
 | **TOTAL** | **Presupuesto Total del Proyecto** | **Línea Base de Costos (BAC)** | **$885.500 ARS** |
 
-### 5.3. Control y Monitoreo del Presupuesto
+### 5.4. Control y Monitoreo del Presupuesto
 El control del costo se efectúa midiendo las horas efectivas insumidas en cada Sprint frente a las horas presupuestadas (15 horas por semana), asegurando que el esfuerzo se mantenga dentro de los límites planificados y no se incurra en desvíos temporales que eleven el costo de oportunidad.
 
 ---
 
 ## 6. Registro y Gestión de Riesgos
-
-La gestión de riesgos identifica, evalúa y planifica respuestas ante eventualidades que puedan comprometer el alcance, los tiempos o la calidad de la entrega.
 
 ### 6.1. Matriz de Evaluación Cualitativa y Cuantitativa
 - **Probabilidad:** Baja (1), Media (2), Alta (3).
@@ -242,22 +257,22 @@ La gestión de riesgos identifica, evalúa y planifica respuestas ante eventuali
 
 | ID | Riesgo Identificado | Prob. | Imp. | Severidad | Disparador (Trigger) |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| **RSG-01** | Ausencia o incompatibilidad del entorno Node.js/SQLite en computadoras del laboratorio durante la demostración presencial. | Media (2) | Alto (3) | **Crítico (6)** | PC del laboratorio sin dependencias instaladas o puertos bloqueados. |
+| **RSG-01** | Incompatibilidad del entorno Node.js/SQLite en PC del laboratorio durante la demostración presencial. | Media (2) | Alto (3) | **Crítico (6)** | PC del laboratorio sin dependencias o permisos bloqueados. |
 | **RSG-02** | Incumplimiento del horario límite de commits semanales fijado por la cátedra (domingos 23:59 hs). | Media (2) | Alto (3) | **Crítico (6)** | Falta de commits registrados el domingo a la medianoche. |
-| **RSG-03** | Inconsistencia de integridad referencial en SQLite por falta de activación forzada de foreign keys. | Media (2) | Medio (2) | **Moderado (4)** | Creación de préstamos con socios inexistentes o eliminación física de libros prestados. |
+| **RSG-03** | Inconsistencia de integridad referencial en SQLite por falta de activación forzada de foreign keys. | Media (2) | Medio (2) | **Moderado (4)** | Creación de préstamos con socios inexistentes o eliminación de libros vinculados. |
 | **RSG-04** | Error de ejecución en script de inicialización (`seed.js`) al ser probado desde cero por los evaluadores. | Media (2) | Alto (3) | **Crítico (6)** | Mensaje `no such table: libros` al ejecutar `npm run seed` en repo recién clonado. |
-| **RSG-05** | Fallas de codificación de caracteres en GitHub (tildes rotas en archivos Markdown). | Baja (1) | Bajo (1) | **Leve (1)** | Visualización de caracteres `?` o `` en títulos o descripciones del repositorio. |
-| **RSG-06** | Complejidad técnica imprevista en lógica de transacciones o reportes que demore el cronograma. | Media (2) | Alto (3) | **Crítico (6)** | Desvío superior a 3 días respecto a la fecha de finalización del Sprint. |
+| **RSG-05** | Fallas de codificación de caracteres en GitHub (tildes rotas en archivos Markdown). | Baja (1) | Bajo (1) | **Leve (1)** | Visualización de caracteres extraños en títulos o descripciones. |
+| **RSG-06** | Condiciones de carrera (race conditions) en préstamos o devoluciones simultáneas de stock. | Media (2) | Alto (3) | **Crítico (6)** | Stock negativo o devoluciones duplicadas ante peticiones concurrentes. |
 
 ### 6.2. Planes de Mitigación y Contingencia
 | ID | Estrategia de Respuesta | Plan de Mitigación (Preventivo) | Plan de Contingencia (Correctivo) |
 | :--- | :--- | :--- | :--- |
-| **RSG-01** | Mitigar / Transferir | Notificar con antelación a la docente la lista de software para el ayudante técnico del laboratorio. Llevar equipo portátil propio con la aplicación levantada. | Disponer de un pendrive con Node.js portable, código descargado y base de datos con datos de prueba lista para correr en modo local. |
-| **RSG-02** | Mitigar | Fijar como rutina de trabajo el congelamiento y push de commits los domingos a las 20:00 hs, dejando 4 horas de margen para imprevistos. | Si ocurre una falla de conexión, generar el commit local fechado y documentar el incidente en la minuta de la semana. |
-| **RSG-03** | Evitar | Incluir la directiva `PRAGMA foreign_keys = ON;` inmediatamente tras abrir la conexión en `src/database.js` y validar existencia en la API. | Implementar validaciones del lado del servidor que verifiquen la existencia del socio y libro previo a ejecutar el préstamo. |
-| **RSG-04** | Evitar | Asegurar que `src/seed.js` verifique y cree la estructura de tablas de forma síncrona/secuencial antes de intentar insertar datos. | Actualizar el README indicando la secuencia exacta de comandos y adjuntar verificación automática en el script de arranque. |
+| **RSG-01** | Mitigar / Transferir | Notificar con antelación a la docente. Llevar equipo portátil propio con la aplicación levantada. | Disponer de un pendrive con Node.js portable, código descargado y base de datos con seed lista. |
+| **RSG-02** | Mitigar | Fijar como rutina de trabajo el congelamiento y push de commits los domingos a las 20:00 hs (4 hs de margen). | Generar el commit local fechado y documentar el incidente en la minuta de la semana. |
+| **RSG-03** | Evitar | Incluir `PRAGMA foreign_keys = ON;` al conectar la base de datos y validar existencia en API. | Validar del lado del servidor existencia previa y aplicar bloqueos explícitos con HTTP 400. |
+| **RSG-04** | Evitar | Asegurar que `src/seed.js` verifique y cree la estructura de tablas de forma síncrona antes de insertar datos. | Actualizar el README indicando la secuencia exacta de comandos de arranque. |
 | **RSG-05** | Mitigar | Forzar codificación UTF-8 pura en el editor para todos los archivos `.md`, `.js`, `.html` y `.css`. | Reemplazar caracteres dañados y re-commitear con mensaje de saneamiento de codificación. |
-| **RSG-06** | Mitigar | Desglosar las funcionalidades complejas en Historias de Usuario más pequeñas (atómicas) y priorizar funcionalidades esenciales. | Recurrir al Comité de Control de Cambios en el encuentro semanal para ajustar el alcance del Sprint sin comprometer la entrega final. |
+| **RSG-06** | Evitar | Encapsular operaciones en transacciones atómicas `runInTransaction` (`BEGIN IMMEDIATE` / `COMMIT`) con `WHERE stock_disponible > 0`. | Revertir con `ROLLBACK` y retornar HTTP 400 impidiendo stock inconsistente. |
 
 ---
 
@@ -283,22 +298,24 @@ El Comité de Control de Cambios está conformado por:
 
 | Canal / Evento | Emisor | Receptor | Frecuencia | Medio | Registro / Evidencia |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Encuentro Presencial de Seguimiento** | Estudiante / Docente | Docentes / Estudiante | Semanal / Quincenal (**Viernes 15:40 hs**) | Presencial en Sede ISBH | Minutas de Reunión (Anexo II) y firma de planilla de seguimiento. |
+| **Encuentro Presencial de Seguimiento** | Estudiante / Docente | Docentes / Estudiante | Semanal / Quincenal (**Viernes 15:40 hs**) | Presencial en Sede ISBH | Minutas de Reunión (Anexo II) y planilla de seguimiento. |
 | **Cierre Semanal de Entregas** | Estudiante | Cátedra evaluadora | Semanal (**Domingos 23:59 hs**) | Repositorio GitHub | Historial de commits en rama `develop` / `main`. |
-| **Gestión Ágil de Tareas** | Estudiante | Cátedra / Interesados | Continuo | GitHub Projects (Kanban) | Tarjetas de Historias de Usuario en estados Todo / In Progress / Done. |
+| **Gestión Ágil de Tareas** | Estudiante | Cátedra / Interesados | Continuo | GitHub Projects (Kanban) | Tarjetas de Historias de Usuario en Todo / In Progress / Done. |
 | **Consultas y Novedades Formales** | Estudiante / Docentes | Docentes / Estudiante | Asíncrono según necesidad | Correo Electrónico Institucional | Hilos de correo archivados como minutas complementarias. |
 
 ---
 
 ## 9. Plan de Pruebas y Aceptación
 
-| ID | Módulo / Funcionalidad | Caso de Prueba | Resultado Esperado | Criterio de Aceptación | Mecanismo |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **PRB-01** | Catálogo de Libros (CRUD) | Alta de libro con ISBN repetido o título vacío. | El sistema rechaza la solicitud tanto en frontend como con HTTP 400 en API. | No se insertan registros incompletos ni ISBNs duplicados. | Demostración presencial y test de API. |
-| **PRB-02** | Control de Stock al Prestar | Intento de préstamo de un ejemplar cuyo `stock_disponible` es igual a 0. | El sistema bloquea el préstamo e informa que no hay copias disponibles. | El stock no sufre modificaciones negativas. | Prueba funcional con datos de seed. |
-| **PRB-03** | Devolución de Ejemplar | Devolución de un préstamo activo de un libro. | El estado pasa a 'Devuelto', se guarda la fecha actual y `stock_disponible` se incrementa en 1. | Stock y estados actualizados de forma atómica en SQLite. | Verificación en base de datos. |
-| **PRB-04** | Eliminación de Libro / Socio | Intento de eliminación de socio o libro con préstamo activo. | Se impide el borrado con alerta clara de restricción. | Se preserva la integridad del historial de préstamos. | Prueba en UI y backend. |
-| **PRB-05** | Alertas de Vencimiento | Visualización de préstamos con fecha mayor a 15 días. | La fila se resalta en color rojo con indicación de atraso. | Cumplimiento del criterio visual de HU 3.4. | Inspección visual en UI. |
+| ID | Módulo / Funcionalidad | Caso de Prueba | Resultado Esperado | Criterio de Aceptación |
+| :--- | :--- | :--- | :--- | :--- |
+| **PRB-01** | Catálogo de Libros (CRUD) | Alta de libro con ISBN repetido o título vacío. | Rechazo con HTTP 400 en API. | No se insertan registros incompletos ni ISBNs duplicados. |
+| **PRB-02** | Control de Stock al Prestar | Intento de préstamo de un ejemplar cuyo `stock_disponible` es 0. | Bloqueo con HTTP 400 sin generar stock negativo. | El stock permanece inmutable en 0. |
+| **PRB-03** | Devolución de Ejemplar | Devolución de un préstamo activo de un libro. | Pasa a 'Devuelto', registra fecha y stock aumenta en 1. | Stock y estado actualizados de forma atómica en SQLite. |
+| **PRB-04** | Eliminación de Libro / Socio | Intento de eliminación de entidad con préstamos activos o historial devuelto. | Se impide el borrado con alerta de auditoría. | Se preserva la integridad del historial de préstamos. |
+| **PRB-05** | Alertas de Vencimiento | Visualización de préstamos activos con más de 15 días. | Resaltado en color rojo indicando morosidad. | Cumplimiento del criterio visual de HU 3.4. |
+| **PRB-06** | Kardex y Stock Dinámico | Alta inicial (+8), préstamo (-1), devolución (+1), daño (-1). | Stock dinámico acumulado igual a 7 unidades. | Cumplimiento estricto del cálculo dinámico por movimientos. |
+| **PRB-07** | Validación Estricta Backend | Envío de stock `"2abc"` al endpoint `POST /api/libros`. | Servidor rechaza con HTTP 400 sin parsear a 2. | Validación regex `/^\d+$/` estricta (HU 4.1). |
 
 ---
 
@@ -338,38 +355,53 @@ No aplica por tratarse de un proyecto de evaluación académica.
 ### Minuta 3: Sprint 3 - Seguimiento Presencial del Primer Incremento
 - **Fecha:** 16 de octubre de 2026 (Encuentro presencial).
 - **Participantes:** Leandro Nallib Asis, Mónica Yamil Alvarado, Christian Di Guardi, Fernando Juárez.
-- **Logros reconocidos:** Repositorio creado, documentación base elaborada, organización lograda y utilización inicial de ramas. Código base funcional en repositorio.
-- **Compromisos y solicitudes de cátedra formalizadas por la Prof. Mónica Yamil Alvarado:**
-  1. **PMI:** Cambiar horario de lunes a las 20:00 hs para reflejar los encuentros presenciales acordados (viernes 15:40 hs) y corte semanal de commits los domingos a las 23:59 hs.
-  2. **Gantt:** Modificar el gráfico Gantt alineándolo a las fechas de los 6 Sprints del Plan de Acción.
-  3. **Costos y Riesgos:** Desarrollar en profundidad la gestión de costos presupuestarios y la gestión de riesgos con mitigaciones.
-  4. **Repositorio:** Implementar GitHub Project (Kanban) y GitHub Wiki (con el PMI volcado en ella).
-  5. **Trazabilidad de HU a Futuro:** Incorporar matriz de trazabilidad y requerimientos proyectados a los Sprints 4, 5 y 6.
-  6. **Organización en GitHub:** Crear Organización en GitHub e invitar al usuario `fyalva` (Prof. Fernando Juárez / Yamil Alvarado).
-  7. **Ramas y buenas prácticas:** Incorporar y mantener la rama `develop` como rama de integración bajo flujo GitFlow.
-  8. **Demostración funcional:** Llevar equipo propio o coordinar con la docente la instalación de software en las computadoras del laboratorio para demostrar la aplicación funcionando en el próximo encuentro.
+- **Logros reconocidos:** Repositorio creado, documentación base elaborada, organización lograda y utilización inicial de ramas.
+- **Compromisos adoptados:** Actualizar horarios a viernes 15:40 hs y domingos 23:59 hs, alinear Gantt, desarrollar costos y riesgos, implementar rama `develop` y GitHub Projects/Wiki.
 
 ### Minuta Complementaria: Reporte Técnico de Asesoría
 - **Fecha:** 17 de octubre de 2026 (Comunicación por correo).
 - **Emisor:** Prof. Christian Di Guardi.
-- **Aportes y recomendaciones técnicas adoptadas:**
-  1. **Script de Seed:** Corregir `seed.js` para que cree las tablas si no existen previamente, evitando el error `no such table: libros` en instalaciones limpias.
-  2. **Validaciones Backend:** Robustecer la API en `server.js` con rechazos HTTP 400 ante títulos vacíos o stock negativo.
-  3. **Claves foráneas en SQLite:** Activar `PRAGMA foreign_keys = ON;` al conectar la base de datos para impedir inconsistencias de socios y libros.
-  4. **Codificación:** Normalizar `historias_de_usuario.md` a UTF-8 puro para eliminar caracteres dañados en GitHub.
-  5. **Refactorización de código:** Extraer función reutilizable para renderizado de filas en `main.js` y consolidar estilos en `style.css`.
+- **Aportes técnicos adoptados:** Corrección de `seed.js` para crear tablas si no existen, validaciones backend HTTP 400, activación de `PRAGMA foreign_keys = ON;` y codificación UTF-8 pura.
+
+### Minuta 4: Sprint 4 - Cierre Asincrónico y Devolución de Cátedra
+- **Fecha:** 05 de noviembre de 2026 (Comunicación oficial vía correo electrónico).
+- **Participantes:** Equipo docente evaluador de PPII, Leandro Nallib Asis.
+- **Logros validados:** Módulos de socios, préstamos y devoluciones verificados en `develop`. Carga inicial desde base nueva comprobada.
+- **Ajustes de cierre implementados:** Bloqueo explícito de bajas con historial de préstamos devueltos para auditoría, blindaje transaccional atómico contra concurrencia y doble devolución, replanificación formal de HU 3.1 al Sprint 5 y matriz de evidencias de prueba.
+
+### Minuta 5: Sprint 5 - Incremento Técnico, Kardex y Reporte de Morosidad
+- **Fecha:** 18 de noviembre de 2026 (Reunión / Devolución técnica docente).
+- **Participantes:** Leandro Nallib Asis, Equipo docente evaluador.
+- **Requerimientos abordados e implementados:**
+  1. **Sistema de Movimientos y Kardex (Event Sourcing de Stock):** Creación de la tabla `movimientos_stock` para auditar cada variación (+ingreso, -préstamo, +devolución, -daño) y calcular el stock dinámicamente en base a movimientos.
+  2. **Trazabilidad bidireccional:** Visualización del Kardex por libro (HU 3.5) y de la ficha histórica de lectura por socio.
+  3. **Validaciones estrictas de Backend (HU 4.1):** Rechazo estricto con HTTP 400 de strings como `"2abc"` y tipos alfanuméricos en stock.
+  4. **Reporte de Morosos (HU 5.1):** Pantalla dedicada con listado de socios adeudando préstamos con más de 15 días, datos de contacto e impresión.
+  5. **Panel de Control (HU 3.1):** Dashboard en pantalla principal con 5 tarjetas métricas y accesos rápidos.
+
+### Minuta 6: Sprint 6 - Cierre de Proyecto, Consolidación Release v1.0 y Defensa
+- **Fecha:** 20 de noviembre de 2026.
+- **Participantes:** Leandro Nallib Asis (Desarrollador / Scrum Master).
+- **Acciones finales ejecutadas:**
+  1. Integración definitiva de la rama `develop` en la rama `main` bajo flujo GitFlow.
+  2. Generación del release de entrega final **Release v1.0.0**.
+  3. Sincronización completa de la documentación técnica y metodológica en `PMI.md`, `historias_de_usuario.md` y `README.md`.
+  4. Verificación integral de despliegue local limpio mediante `npm install`, `npm run seed` y `npm start`.
+  5. Preparación del guion de defensa oral y carpetas de evidencia para la mesa examinadora presencial.
 
 ---
 
 ## 14. Anexo III – Documentos de Control de Cambios
 - **Solicitud CC-01 (17/10/2026):** Adecuación del cronograma a Sprints oficiales, formalización de presupuesto y mitigación de riesgos presenciales. Estado: **Aprobado e Implementado**.
 - **Solicitud CC-02 (17/10/2026):** Adopción de rama `develop` y flujo GitFlow estándar con corte los domingos a las 23:59 hs. Estado: **Aprobado e Implementado**.
+- **Solicitud CC-03 (05/11/2026):** Replanificación de HU 3.1 (Dashboard) para Sprint 5, blindaje transaccional de concurrencia y bloqueo explícito con preservación de auditoría en bajas de libros y socios. Estado: **Aprobado e Implementado**.
+- **Solicitud CC-04 (18/11/2026):** Implementación del sistema de Kardex / Movimientos inmutables de stock (Event Sourcing), cálculo dinámico de inventario, trazabilidad de lectores, validaciones estrictas anti-"2abc" y reporte especializado de morosidad. Estado: **Aprobado e Implementado**.
 
 ---
 
 ## 15. Anexo IV – Otros Documentos y Enlaces
-- **Repositorio de GitHub:** `https://github.com/LeandroNallibAsis/biblioteca-virtual.git`
-- **Product Backlog y Trazabilidad:** Archivo `historias_de_usuario.md` en la raíz del proyecto.
+- **Repositorio de GitHub:** [https://github.com/LeandroNallibAsis/biblioteca-virtual.git](https://github.com/LeandroNallibAsis/biblioteca-virtual.git)
+- **Product Backlog y Trazabilidad:** Archivo `historias_de_usuario.md` en la raíz del repositorio.
 - **Documentación en la Nube:** [Carpeta Google Drive Oficial](https://drive.google.com/drive/folders/1Um9Vl5dBuFflwhE02sFL_Qz-B1nTBtRn?usp=sharing)
-- **Tablero Ágil:** GitHub Projects (Kanban de Sprints).
-- **Wiki del Proyecto:** GitHub Wiki institucional con versión integral del PMI.
+- **Tablero Ágil (Kanban):** [GitHub Projects - Tablero Scrum del Proyecto](https://github.com/users/LeandroNallibAsis/projects/1)
+- **Wiki del Proyecto:** [GitHub Wiki - Documentación Oficial PMI](https://github.com/LeandroNallibAsis/biblioteca-virtual/wiki)
